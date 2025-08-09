@@ -109,8 +109,11 @@ def population_growth_cleaning(file_name):
     # Rename the "SA2 name" column to "Region"
     population_growth = population_growth.rename(columns={"SA2 name": "Region"})
 
+    # Rename 'TOTAL AUSTRALIA' to 'Total Australia' in 'Region' column
+    population_growth["Region"] = population_growth["Region"].replace("TOTAL AUSTRALIA", "Total Australia")
+
     # Set the desired order for the 'Region' column
-    order = ["Melbourne CBD - East", "Melbourne CBD - North", "Melbourne CBD - West", "Total Victoria", "TOTAL AUSTRALIA"]
+    order = ["Melbourne CBD - East", "Melbourne CBD - North", "Melbourne CBD - West", "Total Victoria", "Total Australia"]
     # Reindex the DataFrame to match the desired order
     population_growth = population_growth.set_index("Region").loc[order].reset_index()
 

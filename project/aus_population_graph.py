@@ -1,5 +1,6 @@
 import streamlit as st
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 import pandas as pd
 import os
 
@@ -12,50 +13,67 @@ def get_population_data(file_name):
     return population_growth
 
 
-def cbd_population_growth_plotting(population_growth):
-    # Filter only CBD data
-    regions = ["Melbourne CBD - East", "Melbourne CBD - North", "Melbourne CBD - West"]
-    population_growth_cbd = population_growth[population_growth["region"].isin(regions)]
+def aus_population_growth_plotting(population_growth):
+    # Filter only Vic and Aus data
+    regions = ["Total Victoria", "Total Australia"]
+    population_growth_aus = population_growth[population_growth["region"].isin(regions)]
     year_columns = [col for col in population_growth.columns if col.isdigit() or (col.startswith("20") and col[2:].isdigit())]
-    population_growth_cbd = population_growth_cbd.set_index("region").loc[regions, year_columns].T.astype(float)
+    population_growth_aus = population_growth_aus.set_index("region").loc[regions, year_columns].T.astype(float)
 
-    # Plotly area chart
+    # Plotly line chart with two y-axes
     
     # Get hex color codes
-    set2_colors = ["#66c2a5", "#fc8d62", "#8da0cb"]
-    # Create the plot
-    population_growth_plot = go.Figure()
-    for i, region in enumerate(regions):
-        # Plot
-        population_growth_plot.add_trace(go.Scatter(
-            x = population_growth_cbd.index,
-            y = population_growth_cbd[region],
+    set2_colors = ["#e78ac3", "#a6d854"]
+    # Get 2 y-axes
+    population_growth_plot = make_subplots(specs=[[{"secondary_y": True}]])
+
+    # Add traces: first region on primary y, second region on secondary y
+    population_growth_plot.add_trace(
+        go.Scatter(
+            x = population_growth_aus.index,
+            y = population_growth_aus[regions[0]],
             mode = 'lines',
-            stackgroup = 'one',
-            name = region,
-            line = dict(color = set2_colors[i])
-        ))
-        # Layout
-        population_growth_plot.update_layout(
-            title = dict(
-                text = "Population Growth: Melbourne CBD Regions",
-                x = 0.5,
-                xanchor = "center"
-            ),
-            xaxis_title = "Year",
-            yaxis_title = "Population",
-            height = 500,
-            showlegend = True,
-            legend = dict(
-                orientation = "h",
-                yanchor = "bottom",
-                y = -0.3,  # Adjust as needed for spacing
-                xanchor = "center",
-                x = 0.5
-            ),
-            plot_bgcolor = 'white',
-            paper_bgcolor = 'white'
-        )
+            name = regions[0],
+            line = dict(color = set2_colors[0])
+        ),
+        secondary_y=False
+    )
+    population_growth_plot.add_trace(
+        go.Scatter(
+            x = population_growth_aus.index,
+            y = population_growth_aus[regions[1]],
+            mode = 'lines',
+            name = regions[1],
+            line = dict(color = set2_colors[1])
+        ),
+        secondary_y = True
+    )
+
+    population_growth_plot.update_layout(
+        title = dict(
+            text = "Population Growth: Victoria and Australia",
+            x = 0.5,
+            xanchor = "center"
+        ),
+        xaxis_title = "Year",
+        height = 500,
+        showlegend = True,
+        legend = dict(
+            orientation = "h",
+            yanchor = "bottom",
+            y = -0.3,
+            xanchor = "center",
+            x = 0.5
+        ),
+        plot_bgcolor = 'white',
+        paper_bgcolor = 'white'
+    )
+    # Force y-axes to start at zero by setting autorange to False and specifying max
+    vic_max = population_growth_aus[regions[0]].max()
+    aus_max = population_growth_aus[regions[1]].max()
+    population_growth_plot.update_yaxes(title_text=regions[0], range=[0, vic_max], autorange=False, secondary_y=False)
+    population_growth_plot.update_yaxes(title_text=regions[1], range=[0, aus_max], autorange=False, secondary_y=True)
+    
     st.plotly_chart(population_growth_plot, use_container_width=True)
 
 if __name__ == "__main__":
@@ -64,4 +82,4 @@ if __name__ == "__main__":
     print(population_growth.head())  # See if data loads correctly
 
     # Plot (this will only show in a Streamlit app, not in plain Python)
-    cbd_population_growth_plotting(population_growth)
+    aus_population_growth_plotting(population_growth)

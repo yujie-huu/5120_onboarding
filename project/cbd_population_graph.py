@@ -35,27 +35,31 @@ def cbd_population_growth_plotting(population_growth):
             name = region,
             line = dict(color = set2_colors[i])
         ))
-        # Layout
-        population_growth_plot.update_layout(
-            title = dict(
-                text = "Population Growth: Melbourne CBD Regions",
-                x = 0.5,
-                xanchor = "center"
-            ),
-            xaxis_title = "Year",
-            yaxis_title = "Population",
-            height = 500,
-            showlegend = True,
-            legend = dict(
-                orientation = "h",
-                yanchor = "bottom",
-                y = -0.3,  # Adjust as needed for spacing
-                xanchor = "center",
-                x = 0.5
-            ),
-            plot_bgcolor = 'white',
-            paper_bgcolor = 'white'
-        )
+    # Set y-axis to start at zero and go to the max value across all regions
+    # For stacked area, y_max should be the max of the row-wise sum (total population per year)
+    y_max = population_growth_cbd.sum(axis=1).max()
+    population_growth_plot.update_layout(
+        title = dict(
+            text = "Population Growth: Melbourne CBD Regions",
+            x = 0.5,
+            xanchor = "center"
+        ),
+        xaxis_title = "Year",
+        yaxis_title = "Population",
+        height = 500,
+        showlegend = True,
+        legend = dict(
+            orientation = "h",
+            yanchor = "bottom",
+            y = -0.3,  # Adjust as needed for spacing
+            xanchor = "center",
+            x = 0.5
+        ),
+        plot_bgcolor = 'white',
+        paper_bgcolor = 'white',
+        yaxis=dict(range=[0, y_max])
+    )
+    
     st.plotly_chart(population_growth_plot, use_container_width=True)
 
 if __name__ == "__main__":
