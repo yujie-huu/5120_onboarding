@@ -31,12 +31,12 @@ def vehicle_ownership_cleaning(file_name):
     vehicle_ownership = vehicle_ownership[vehicle_ownership["State"].isin(["Vic.", "Aust."])]
     
     # Calculate total vehicle ownership for each year
-    vehicle_ownership["2016"] = vehicle_ownership["2016 - 2017"].str.replace(',', '').astype(float) * vehicle_ownership["%_2016_2017"].astype(float) / 100
-    vehicle_ownership["2017"] = vehicle_ownership["2017 - 2018"].str.replace(',', '').astype(float) * vehicle_ownership["%_2017_2018"].astype(float) / 100
-    vehicle_ownership["2018"] = vehicle_ownership["2018 - 2019"].str.replace(',', '').astype(float) * vehicle_ownership["%_2018_2019"].astype(float) / 100
-    vehicle_ownership["2019"] = vehicle_ownership["2019 - 2020"].str.replace(',', '').astype(float) * vehicle_ownership["%_2019_2020"].astype(float) / 100
-    vehicle_ownership["2020"] = vehicle_ownership["2020 - 2021"].str.replace(',', '').astype(float) * vehicle_ownership["%_2020_2021"].astype(float) / 100
-    
+    vehicle_ownership["2016"] = vehicle_ownership["2016 - 2017"].str.replace(',', '').astype(float) * 100 / vehicle_ownership["%_2016_2017"].astype(float)
+    vehicle_ownership["2017"] = vehicle_ownership["2017 - 2018"].str.replace(',', '').astype(float) * 100 / vehicle_ownership["%_2017_2018"].astype(float)
+    vehicle_ownership["2018"] = vehicle_ownership["2018 - 2019"].str.replace(',', '').astype(float) * 100 / vehicle_ownership["%_2018_2019"].astype(float)
+    vehicle_ownership["2019"] = vehicle_ownership["2019 - 2020"].str.replace(',', '').astype(float) * 100 / vehicle_ownership["%_2019_2020"].astype(float)
+    vehicle_ownership["2020"] = vehicle_ownership["2019 - 2020"].str.replace(',', '').astype(float) * (100 + vehicle_ownership["%_2019_2020"].astype(float)) / vehicle_ownership["%_2019_2020"].astype(float)
+
     # Keep only the 'State' and total columns
     vehicle_ownership = vehicle_ownership[["State", "2016", "2017", "2018", "2019", "2020"]]
     

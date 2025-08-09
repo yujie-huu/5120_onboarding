@@ -27,7 +27,7 @@ def population_density_plotting(population_growth):
             densities.append(population / area)
         population_density.append(densities)
 
-    # Plotly grouped bar chart
+    # Create grouped bar chart
     population_density_plot = go.Figure()
     set2_colors = ["#66c2a5", "#fc8d62", "#8da0cb", "#e78ac3", "#a6d854"]
     for i, region in enumerate(regions):
