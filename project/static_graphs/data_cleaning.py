@@ -39,6 +39,9 @@ def vehicle_ownership_cleaning(file_name):
     
     # Keep only the 'State' and total columns
     vehicle_ownership = vehicle_ownership[["State", "2016", "2017", "2018", "2019", "2020"]]
+    
+    # Rename the columns to unify the formatting
+    vehicle_ownership.columns = [col.strip().lower().replace(' ', '_') for col in vehicle_ownership.columns]
 
     return vehicle_ownership
 
@@ -105,13 +108,14 @@ def population_growth_cleaning(file_name):
     population_growth = population_growth.iloc[:, 9:]
     # Rename the "SA2 name" column to "Region"
     population_growth = population_growth.rename(columns={"SA2 name": "Region"})
-    # Rename 'TOTAL AUSTRALIA' to 'Total Australia'
-    population_growth["Region"] = population_growth["Region"].replace("TOTAL AUSTRALIA", "Total Australia")
 
     # Set the desired order for the 'Region' column
-    order = ["Melbourne CBD - East", "Melbourne CBD - North", "Melbourne CBD - West", "Total Victoria", "Total Australia"]
+    order = ["Melbourne CBD - East", "Melbourne CBD - North", "Melbourne CBD - West", "Total Victoria", "TOTAL AUSTRALIA"]
     # Reindex the DataFrame to match the desired order
     population_growth = population_growth.set_index("Region").loc[order].reset_index()
+
+    # Rename the columns to unify the formatting
+    population_growth.columns = [col.strip().lower().replace(' ', '_') for col in population_growth.columns]
 
     return population_growth
 
@@ -143,6 +147,10 @@ def carbon_emission_cleaning(file_name):
     # Group by 'Transport' and calculate the mean of 'CarbonEmission'
     average_emission = carbon_emission.groupby("Transport")["CarbonEmission"].mean().reset_index()
     
+    # Rename the columns to unify the formatting
+    average_emission.columns = [col.strip().lower().replace(' ', '_') for col in average_emission.columns]
+    average_emission = average_emission.rename(columns={'carbonemission': 'carbon_emission'})
+
     return average_emission
 
 
