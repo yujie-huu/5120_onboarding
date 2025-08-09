@@ -13,7 +13,7 @@ def get_population_data(file_name):
     return population_growth
 
 
-def aus_population_growth_plotting(population_growth):
+def plotting_aus_population_growth(population_growth):
     # Filter only Vic and Aus data
     regions = ["Total Victoria", "Total Australia"]
     population_growth_aus = population_growth[population_growth["region"].isin(regions)]
@@ -82,4 +82,4 @@ if __name__ == "__main__":
     print(population_growth.head())  # See if data loads correctly
 
     # Plot (this will only show in a Streamlit app, not in plain Python)
-    aus_population_growth_plotting(population_growth)
+    plotting_aus_population_growth(population_growth)

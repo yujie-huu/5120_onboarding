@@ -12,7 +12,7 @@ def get_population_data(file_name):
     return population_growth
 
 
-def cbd_population_growth_plotting(population_growth):
+def plotting_cbd_population_growth(population_growth):
     # Filter only CBD data
     regions = ["Melbourne CBD - East", "Melbourne CBD - North", "Melbourne CBD - West"]
     population_growth_cbd = population_growth[population_growth["region"].isin(regions)]
@@ -68,4 +68,4 @@ if __name__ == "__main__":
     print(population_growth.head())  # See if data loads correctly
 
     # Plot (this will only show in a Streamlit app, not in plain Python)
-    cbd_population_growth_plotting(population_growth)
+    plotting_cbd_population_growth(population_growth)
