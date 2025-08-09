@@ -116,16 +116,34 @@ def population_growth_cleaning(file_name):
     return population_growth
 
 
-def carbon_emissions_cleaning(file_name):
+def carbon_emission_cleaning(file_name):
     """
-    Clean the carbon emissions data.
+    Cleans the carbon emissions data with the specified file name.
+    
+    Parameters:
+    file_name (str): The name of the CSV file containing carbon emissions data.
+
+    Returns:
+    pd.DataFrame: A cleaned DataFrame with relevant columns and rows.
     """
-    carbon_emissions = pd.read_csv(file_name)
+    # Load the data
+    base_dir = os.path.dirname(__file__)
+    file_path = os.path.join(base_dir, file_name)
+    carbon_emission = pd.read_csv(file_path)
+    
+    # Keep only the "Transport", "Vehicle Type", and "CarbonEmission" columns
+    carbon_emission = carbon_emission[["Transport", "Vehicle Type", "CarbonEmission"]]
 
-    # Perform cleaning steps specific to carbon emissions data
-    # ...
+    # Replace all private vehicle "Transport" values with "Vehicle Type" values
+    carbon_emission.loc[carbon_emission["Transport"] == "private", "Transport"] = carbon_emission.loc[carbon_emission["Transport"] == "private", "Vehicle Type"]
 
-    return carbon_emissions
+    # Remove "Vehicle Type" column
+    carbon_emission = carbon_emission.drop(columns=["Vehicle Type"])
+    
+    # Group by 'Transport' and calculate the mean of 'CarbonEmission'
+    average_emission = carbon_emission.groupby("Transport")["CarbonEmission"].mean().reset_index()
+    
+    return average_emission
 
 
 def save_cleaned_dataframe(df, file_name):
@@ -135,11 +153,16 @@ def save_cleaned_dataframe(df, file_name):
     project_dir = os.path.dirname(os.path.dirname(__file__))
     output_path = os.path.join(project_dir, file_name)
     df.to_csv(output_path, index=False)
+    
     print(f"{file_name} saved to {output_path}")
 
 
-# vehicle_ownership_clean = vehicle_ownership_cleaning("vehicle_ownership_raw.csv")
-population_growth_clean = population_growth_cleaning("population_growth_raw.csv")
+# Execute the functions for each dataset
 
-# save_cleaned_dataframe(vehicle_ownership_clean, "vehicle_ownership_clean.csv")
+vehicle_ownership_clean = vehicle_ownership_cleaning("vehicle_ownership_raw.csv")
+population_growth_clean = population_growth_cleaning("population_growth_raw.csv")
+carbon_emission_clean = carbon_emission_cleaning("carbon_emission_raw.csv")
+
+save_cleaned_dataframe(vehicle_ownership_clean, "vehicle_ownership_clean.csv")
 save_cleaned_dataframe(population_growth_clean, "population_growth_clean.csv")
+save_cleaned_dataframe(carbon_emission_clean, "carbon_emission_clean.csv")
