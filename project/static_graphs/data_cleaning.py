@@ -1,19 +1,16 @@
 import pandas as pd
 import os
 
-"""
-Vehicle Ownership Data Cleaning
-"""
 
 def vehicle_ownership_cleaning(file_name):
     """
-    Cleans the carbon emissions data from the specified file path.
+    Cleans the vehicle ownership data with the specified file name.
     
     Parameters:
-    file_path (str): The path to the CSV file containing carbon emissions data.
+    file_name (str): The name of the CSV file containing vehicle ownership data.
     
     Returns:
-    pd.DataFrame: A cleaned DataFrame with relevant columns and no missing values.
+    pd.DataFrame: A cleaned DataFrame with relevant columns and rows.
     """
     # Load the data
     base_dir = os.path.dirname(__file__)
@@ -46,6 +43,91 @@ def vehicle_ownership_cleaning(file_name):
     return vehicle_ownership
 
 
+def population_growth_cleaning(file_name):
+    """
+    Cleans the population growth data with the specified file name.
+    
+    Parameters:
+    file_name (str): The name of the CSV file containing population growth data.
+    
+    Returns:
+    pd.DataFrame: A cleaned DataFrame with relevant columns and rows.
+    """
+    # Load the data
+    base_dir = os.path.dirname(__file__)
+    file_path = os.path.join(base_dir, file_name)
+    # Read after skipping 6 rows, no header
+    population_growth = pd.read_csv(file_path, skiprows=6, header=None)
+    
+    # Set header
+    header = []
+    for column in population_growth.columns:
+        # Check if the first row is empty or contains only whitespace
+        if pd.isnull(population_growth[column].iloc[0]) or str(population_growth[column].iloc[0]).strip() == '':
+            header.append(population_growth[column].iloc[1])
+        else:
+            header.append(population_growth[column].iloc[0])
+    population_growth.columns = header
+    
+    # Remove unnecessary rows
+    population_growth = population_growth.iloc[3:-5].reset_index(drop=True)
+    # Remove columns and rows where all values are NaN
+    population_growth = population_growth.dropna(axis=1, how='all')
+    population_growth = population_growth.dropna(how='all')
+    # Remove columns and rows where all values are empty strings (after dropping NaN columns)
+    population_growth = population_growth.loc[:, ~(population_growth == '').all()]
+    population_growth = population_growth.loc[~(population_growth == '').all(axis=1)]
+    
+    # Turn numeric columns into float
+    population_growth = population_growth.apply(pd.to_numeric, errors='ignore')
+
+    # Add a Total Victoria row
+    total_victoria = population_growth[population_growth["S/T name"] == "Victoria"].sum(numeric_only=True)
+    total_victoria["SA2 name"] = "Total Victoria"
+    population_growth = pd.concat([population_growth, total_victoria.to_frame().T], ignore_index=True)
+    # Fix the % and Population Density Columns for the Total Victoria row
+    index_vic = population_growth[population_growth["SA2 name"] == "Total Victoria"].index
+    index_vic = index_vic[0] if len(index_vic) > 0 else None
+    population_growth.at[index_vic, "%"] = population_growth.at[index_vic, "2011-2021"] / population_growth.at[index_vic, "2011"]
+    population_growth.at[index_vic, "Population density 2021"] = population_growth.at[index_vic, "2021"] / population_growth.at[index_vic, "Area"]
+
+    # Keep only CBD rows and total Vic row and total Aus row
+    keep_names = [
+        "Melbourne CBD - East",
+        "Melbourne CBD - North",
+        "Melbourne CBD - West",
+        "Total Victoria",
+        "TOTAL AUSTRALIA"
+    ]
+    population_growth = population_growth[population_growth["SA2 name"].isin(keep_names)].reset_index(drop=True)
+    
+    # Remove the first 9 columns
+    population_growth = population_growth.iloc[:, 9:]
+    # Rename the "SA2 name" column to "Region"
+    population_growth = population_growth.rename(columns={"SA2 name": "Region"})
+    # Rename 'TOTAL AUSTRALIA' to 'Total Australia'
+    population_growth["Region"] = population_growth["Region"].replace("TOTAL AUSTRALIA", "Total Australia")
+
+    # Set the desired order for the 'Region' column
+    order = ["Melbourne CBD - East", "Melbourne CBD - North", "Melbourne CBD - West", "Total Victoria", "Total Australia"]
+    # Reindex the DataFrame to match the desired order
+    population_growth = population_growth.set_index("Region").loc[order].reset_index()
+
+    return population_growth
+
+
+def carbon_emissions_cleaning(file_name):
+    """
+    Clean the carbon emissions data.
+    """
+    carbon_emissions = pd.read_csv(file_name)
+
+    # Perform cleaning steps specific to carbon emissions data
+    # ...
+
+    return carbon_emissions
+
+
 def save_cleaned_dataframe(df, file_name):
     """
     Save the cleaned DataFrame to the project folder as a CSV.
@@ -56,8 +138,8 @@ def save_cleaned_dataframe(df, file_name):
     print(f"{file_name} saved to {output_path}")
 
 
-vehicle_ownership_clean = vehicle_ownership_cleaning("vehicle_ownership_raw.csv")
+# vehicle_ownership_clean = vehicle_ownership_cleaning("vehicle_ownership_raw.csv")
+population_growth_clean = population_growth_cleaning("population_growth_raw.csv")
 
-save_cleaned_dataframe(vehicle_ownership_clean, "vehicle_ownership_clean.csv")
-
-
+# save_cleaned_dataframe(vehicle_ownership_clean, "vehicle_ownership_clean.csv")
+save_cleaned_dataframe(population_growth_clean, "population_growth_clean.csv")
