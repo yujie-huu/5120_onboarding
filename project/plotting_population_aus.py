@@ -5,7 +5,7 @@ import requests
 from plotly.subplots import make_subplots
 import pandas as pd
 
-def plotting_population_growth_aus(api_url):
+def plotting_population_growth_aus(api_url = "https://ldr1cwcs34.execute-api.ap-southeast-2.amazonaws.com/getPopulationGrowth"):
     # Fetch data from Lambda/API Gateway
     response = requests.get(api_url)
     data = response.json()  # Should be a list of dicts
