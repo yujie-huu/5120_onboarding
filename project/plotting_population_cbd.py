@@ -60,3 +60,7 @@ def plotting_population_growth_cbd(api_url):
     )
     
     st.plotly_chart(population_growth_plot, use_container_width=True)
+    
+
+# Example usage in your Streamlit app:
+# plotting_population_growth_cbd("https://your-api-gateway-url/prod/your-lambda-endpoint")

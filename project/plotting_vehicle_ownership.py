@@ -56,3 +56,6 @@ def plotting_vehicle_ownership(api_url):
     )
     st.plotly_chart(fig, use_container_width=True)
     
+
+# Example usage in your Streamlit app:
+# plotting_vehicle_ownership("https://your-api-gateway-url/prod/your-lambda-endpoint")

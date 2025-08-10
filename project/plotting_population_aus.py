@@ -74,3 +74,6 @@ def plotting_population_growth_aus(api_url):
     population_growth_plot.update_yaxes(title_text=regions[1], range=[0, aus_max], autorange=False, secondary_y=True)
     
     st.plotly_chart(population_growth_plot, use_container_width=True)
+
+# Example usage in your Streamlit app:
+# plotting_population_growth_aus("https://your-api-gateway-url/prod/your-lambda-endpoint")

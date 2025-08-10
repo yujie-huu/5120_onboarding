@@ -60,4 +60,7 @@ def plotting_population_density(api_url):
         paper_bgcolor='white'
     )
     st.plotly_chart(population_density_plot, use_container_width=True)
-    
+
+
+# Example usage in your Streamlit app:
+# plotting_population_density("https://your-api-gateway-url/prod/your-lambda-endpoint")
