@@ -219,10 +219,10 @@ def get_time_slots():
 @st.cache_data
 def get_parking_availability():
     """
-    获取停车相关的所有数据：街道列表、停车区域信息、车位状态
+    Obtain all the data related to parking: list of streets, parking area information, and parking space status
     """
     try:
-        # 获取街道列表
+        # Obtain the list of streets
         print("正在获取街道列表...")
         streets_response = requests.get("https://ldr1cwcs34.execute-api.ap-southeast-2.amazonaws.com/streets")
         print(f"街道API状态码: {streets_response.status_code}")
@@ -233,15 +233,15 @@ def get_parking_availability():
             print(f"街道API原始响应: {streets_data}")
             print(f"街道数据类型: {type(streets_data)}")
 
-            # 解析街道列表
+            # Parse the list of streets
             if isinstance(streets_data, dict) and 'body' in streets_data:
                 streets_body = streets_data['body']
                 print(f"街道body内容: {streets_body}")
                 print(f"街道body类型: {type(streets_body)}")
 
-                # 尝试多种解析方法
+                # Try various analytical methods
                 try:
-                    # 方法1: 直接JSON解析
+                    # Method 1: Direct JSON Parsing
                     if isinstance(streets_body, str):
                         import json
                         streets_list = json.loads(streets_body)
@@ -251,9 +251,8 @@ def get_parking_availability():
                 except Exception as e1:
                     print(f"方法1失败: {e1}")
                     try:
-                        # 方法2: 处理特殊格式
+                        # Method 2: Handling Special Formats
                         if isinstance(streets_body, str) and '"on street list"' in streets_body:
-                            # 提取引号内的内容
                             import re
                             matches = re.findall(r'"([^"]*street[^"]*)"', streets_body, re.IGNORECASE)
                             streets_list = [match for match in matches if 'street' in match.lower()]
@@ -262,7 +261,7 @@ def get_parking_availability():
                         print(f"方法2失败: {e2}")
                         print("街道列表解析失败")
 
-        # 获取停车区域信息
+        # Obtain information about parking areas
         print("正在获取停车区域信息...")
         zones_response = requests.get(
             "https://ldr1cwcs34.execute-api.ap-southeast-2.amazonaws.com/sign-plates-requirements")
@@ -274,7 +273,7 @@ def get_parking_availability():
             print(f"区域API响应类型: {type(zones_data)}")
             print(f"区域API响应内容: {zones_data}")
 
-            # 解析停车区域数据
+            # Analyze parking area data
             if isinstance(zones_data, dict) and 'body' in zones_data:
                 try:
                     zones_body = json.loads(zones_data['body'])
@@ -291,7 +290,7 @@ def get_parking_availability():
             else:
                 print("区域API响应格式不正确")
 
-        # 获取车位状态
+        # Obtain the status of the parking space
         print("正在获取车位状态...")
         status_response = requests.get("https://ldr1cwcs34.execute-api.ap-southeast-2.amazonaws.com/status")
         print(f"状态API状态码: {status_response.status_code}")
@@ -303,17 +302,17 @@ def get_parking_availability():
             print(f"状态API响应类型: {type(status_data)}")
             print(f"状态API响应内容: {status_data}")
 
-            # 解析车位状态数据
+            # Analyze parking space status data
             if isinstance(status_data, dict) and 'body' in status_data:
                 try:
                     status_body = json.loads(status_data['body'])
 
-                    # 获取可用区域列表
+                    # Obtain the list of available areas
                     available_zones = status_body.get('zones', [])
                     print(f"可用区域数量: {len(available_zones)}")
                     print(f"可用区域: {available_zones[:10]}...")  # 显示前10个区域
 
-                    # 获取车位状态详细信息
+                    # Obtain detailed information about the parking space status
                     if 'result' in status_body:
                         status_df = pd.DataFrame(status_body['result'])
                         print(f"车位状态数据行数: {len(status_df)}")
@@ -321,7 +320,7 @@ def get_parking_availability():
                             print(f"状态数据列: {status_df.columns.tolist()}")
                             print(f"状态数据示例:\n{status_df.head()}")
 
-                            # 显示状态分布
+                            # Display status distribution
                             if 'Status_Description' in status_df.columns:
                                 status_counts = status_df['Status_Description'].value_counts()
                                 print(f"车位状态分布:\n{status_counts}")
@@ -362,7 +361,7 @@ def show_homepage():
     </div>
     """, unsafe_allow_html=True)
 
-    # 主要功能 - 停车可用性 (占据显著位置)
+    # Main Function - Parking Availability (Occupies Prominent Position)
     st.markdown("""
     <div class="feature-card main-feature" style="
         background: linear-gradient(135deg, #ff9a56 0%, #ff6b35 100%);
@@ -392,7 +391,7 @@ def show_homepage():
     </div>
     """, unsafe_allow_html=True)
 
-    # 主要功能按钮
+    # Main function button
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         if st.button("🅿️ **FIND PARKING NOW**", key="main_parking",
@@ -400,10 +399,10 @@ def show_homepage():
             st.session_state.page = "availability"
             st.rerun()
 
-    # 分隔线
+    # Horizontal line
     st.markdown("<hr style='margin: 3rem 0; border: 1px solid #e5e7eb;'>", unsafe_allow_html=True)
 
-    # 次要功能标题
+    # Secondary Function Title
     st.markdown("""
     <div style="text-align: center; margin-bottom: 2rem;">
         <h3 style="color: #374151; font-weight: 600; font-size: 1.5rem;">Additional Information Display</h3>
@@ -411,7 +410,7 @@ def show_homepage():
     </div>
     """, unsafe_allow_html=True)
 
-    # 次要功能 - 平衡布局
+    # Secondary Function - Balanced Layout
     col1, col2 = st.columns(2, gap="large")
 
     with col1:
@@ -479,13 +478,11 @@ def show_population_vehicle_section():
     """
     Display the chart showing population growth and vehicle ownership.
     """
-    # 返回按钮 - 永远置顶
-    st.markdown('<div style="position: sticky; top: 0; z-index: 999; background: white; padding: 10px 0;">', unsafe_allow_html=True)
+    # 返回按钮
     if st.button("← Back to Home", key="back_to_home_population",
                  help="Return to main dashboard"):
         st.session_state.page = "home"
         st.rerun()
-    st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown("""
     <div class="section-header">
@@ -503,7 +500,7 @@ def show_population_vehicle_section():
     """, unsafe_allow_html=True)
 
     try:
-        # 获取人口数据并显示人口增长图表
+        # Obtain  data and display population growth
         population_growth_cbd, regions = get_population_data()
 
         # Get hex color codes for population chart
@@ -548,14 +545,7 @@ def show_population_vehicle_section():
             yaxis=dict(range=[0, y_max])
         )
 
-        # 配置去除工具栏中的reset和plotly logo
-        config = {
-            'displayModeBar': True,
-            'modeBarButtonsToRemove': ['resetScale2d', 'resetViewMapbox'],
-            'displaylogo': False
-        }
-
-        st.plotly_chart(population_growth_plot, use_container_width=True, config=config)
+        st.plotly_chart(population_growth_plot, use_container_width=True)
 
         years, vic_values = get_vehicle_data()
 
@@ -593,7 +583,7 @@ def show_population_vehicle_section():
             paper_bgcolor='white'
         )
 
-        st.plotly_chart(vehicle_fig, use_container_width=True, config=config)
+        st.plotly_chart(vehicle_fig, use_container_width=True)
 
     except Exception as e:
         st.error(f"Error loading data: {str(e)}")
@@ -606,12 +596,13 @@ def show_population_vehicle_section():
     </div>
     """, unsafe_allow_html=True)
 
+
 # Environmental Impact Section
 def show_environment_section():
     """
-    显示环境影响图表 - 各交通方式的碳排放
+    Display the environmental impact chart
     """
-    # 返回按钮 - 固定在顶部
+    # Back button - Fixed at the top
     with st.container():
         if st.button("← Back to Home", key="back_to_home_environment",
                      help="Return to main dashboard"):
@@ -634,7 +625,7 @@ def show_environment_section():
     """, unsafe_allow_html=True)
 
     try:
-        # 获取环境数据
+        # Obtain environmental data
         carbon_emission_sorted = get_environmental_data()
 
         # Color scheme for carbon emission chart
@@ -664,7 +655,7 @@ def show_environment_section():
             paper_bgcolor='white'
         )
 
-        # 配置去除工具栏中的reset和plotly logo
+        # Modify the toolbar
         config = {
             'displayModeBar': True,
             'modeBarButtonsToRemove': ['resetScale2d', 'resetViewMapbox'],
@@ -705,7 +696,7 @@ def show_availability_section():
     """, unsafe_allow_html=True)
 
     try:
-        # 获取停车数据
+        # obtain parking data
         streets_list, zones_df, status_df, available_zones = get_parking_availability()
 
         # 在Streamlit中显示调试信息
@@ -715,12 +706,12 @@ def show_availability_section():
             st.write(f"车位状态数据行数: {len(status_df)}")
             st.write(f"可用区域数量: {len(available_zones)}")
 
-        # 检查街道列表
+        # check list of street
         if not streets_list:
             st.warning("无法获取街道列表数据")
             return
 
-        # 街道选择
+        # select street
         selected_street = st.selectbox(
             "Select Street",
             streets_list,
@@ -735,7 +726,7 @@ def show_availability_section():
         </div>
         """, unsafe_allow_html=True)
 
-        # 显示停车区域信息
+        # display info of parking zone
         if not zones_df.empty:
             st.subheader("Parking Zone Restrictions")
             zones_display = zones_df[['Parkingzone', 'Restriction Days', 'Time Restrictions start',
@@ -744,15 +735,15 @@ def show_availability_section():
         else:
             st.warning("无法获取停车区域限制数据")
 
-        # 显示车位状态统计
+        # display status of sensors 显示车位状态统计
         if not status_df.empty:
             st.subheader("Current Parking Space Status")
 
-            # 统计各状态的车位数量
+            # Count the number of parking spaces for each status
             status_summary = status_df['Status_Description'].value_counts().reset_index()
             status_summary.columns = ['Status', 'Count']
 
-            # 添加颜色映射
+            # Add color mapping
             color_map = {
                 'Unoccupied': '#22c55e',  # 绿色
                 'Occupied': '#ef4444',  # 红色
@@ -760,14 +751,14 @@ def show_availability_section():
             }
             status_summary['Color'] = status_summary['Status'].map(lambda x: color_map.get(x, '#6b7280'))
 
-            # 显示统计表格
+            # Display the statistical table
             col1, col2 = st.columns(2)
 
             with col1:
                 st.dataframe(status_summary[['Status', 'Count']], use_container_width=True)
 
             with col2:
-                # 创建饼图显示状态分布
+                # Create a pie chart to display the distribution of states
                 fig = go.Figure(data=[
                     go.Pie(
                         labels=status_summary['Status'],
@@ -789,7 +780,7 @@ def show_availability_section():
 
                 st.plotly_chart(fig, use_container_width=True)
 
-            # 显示可用停车区域
+            # available parking areas
             st.subheader("Available Parking Zones")
             if available_zones:
                 zones_text = ", ".join(available_zones)
