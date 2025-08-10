@@ -91,7 +91,7 @@ def population_growth_cleaning(file_name):
     # Fix the % and Population Density Columns for the Total Victoria row
     index_vic = population_growth[population_growth["SA2 name"] == "Total Victoria"].index
     index_vic = index_vic[0] if len(index_vic) > 0 else None
-    population_growth.at[index_vic, "%"] = population_growth.at[index_vic, "2011-2021"] / population_growth.at[index_vic, "2011"]
+    population_growth.at[index_vic, "%"] = population_growth.at[index_vic, "2011-2021"] / population_growth.at[index_vic, "2011"] * 100
     population_growth.at[index_vic, "Population density 2021"] = population_growth.at[index_vic, "2021"] / population_growth.at[index_vic, "Area"]
 
     # Keep only CBD rows and total Vic row and total Aus row
