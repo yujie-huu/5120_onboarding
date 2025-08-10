@@ -361,76 +361,117 @@ def show_homepage():
         <p class="main-subtitle">Information on Available Parking in Melbourne CBD, Along with Commuting Details</p>
     </div>
     """, unsafe_allow_html=True)
-    
-    # Main feature - Parking Availability
+
+    # 主要功能 - 停车可用性 (占据显著位置)
+    st.markdown("""
+    <div class="feature-card main-feature" style="
+        background: linear-gradient(135deg, #ff9a56 0%, #ff6b35 100%);
+        color: white;
+        padding: 2.5rem;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(255, 107, 53, 0.3);
+        text-align: center;
+        margin: 2rem 0;
+        border: none;
+    ">
+        <div style="font-size: 5rem; margin-bottom: 1rem;">🅿️</div>
+        <h2 style="margin-bottom: 1rem; font-size: 2.2rem; font-weight: 700;">Real-Time Parking Availability</h2>
+        <p style="font-size: 1.3rem; margin-bottom: 2rem; opacity: 0.9;">
+            Find available parking spaces across Melbourne CBD locations in real-time
+        </p>
+        <div style="
+            background: rgba(255, 255, 255, 0.2);
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            display: inline-block;
+            font-weight: bold;
+            font-size: 1.1rem;
+        ">
+            📍 Check Available Spaces Now
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # 主要功能按钮
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        st.markdown("""
-        <div class="feature-card main-feature">
-            <div style="font-size: 4rem; margin-bottom: 1rem;">🅿️</div>
-            <h3>Real-Time Parking Availability</h3>
-            <p style="font-size: 1.1rem; margin-bottom: 1.5rem;">
-                Find available parking spaces across Melbourne CBD locations in real-time
-            </p>
-            <div style="display: flex; align-items: center; justify-content: center; font-weight: bold;">
-                📍 Check Available Spaces Now
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        if st.button("🅿️ Real-Time Parking Availability", key="main_parking", use_container_width=True):
+        if st.button("🅿️ **FIND PARKING NOW**", key="main_parking",
+                     use_container_width=True, type="primary"):
             st.session_state.page = "availability"
             st.rerun()
-    
-    # Secondary features
-    col1, col2, col3 = st.columns(3)
-    
+
+    # 分隔线
+    st.markdown("<hr style='margin: 3rem 0; border: 1px solid #e5e7eb;'>", unsafe_allow_html=True)
+
+    # 次要功能标题
+    st.markdown("""
+    <div style="text-align: center; margin-bottom: 2rem;">
+        <h3 style="color: #374151; font-weight: 600; font-size: 1.5rem;">Additional Information Display</h3>
+        <p style="color: #6b7280; font-size: 1rem;">Explore more insights about Melbourne transport patterns</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # 次要功能 - 平衡布局
+    col1, col2 = st.columns(2, gap="large")
+
     with col1:
         st.markdown("""
-        <div class="feature-card secondary-feature">
-            <div style="font-size: 2.5rem; color: #2563eb; margin-bottom: 1rem;">👥</div>
-            <h4>Population & Vehicle Growth</h4>
-            <p>Analyze population and vehicle registration trends</p>
-            <div style="color: #2563eb; font-weight: 500; font-size: 0.9rem;">
-                📈 View Analysis
+        <div class="feature-card secondary-feature" style="
+            background: linear-gradient(135deg, #fef3e2 0%, #fed7aa 100%);
+            color: #92400e;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(251, 146, 60, 0.2);
+            text-align: center;
+            height: 280px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border: 1px solid #fed7aa;
+        ">
+            <div>
+                <div style="font-size: 3.5rem; margin-bottom: 1rem;">👥</div>
+                <h4 style="margin-bottom: 1rem; font-size: 1.4rem; font-weight: 600;">Population & Vehicle Growth</h4>
+                <p style="font-size: 1rem; opacity: 0.8; line-height: 1.5;">
+                    Analyze population and vehicle registration trends affecting parking demand
+                </p>
             </div>
         </div>
         """, unsafe_allow_html=True)
-        
-        if st.button("👥 Population/Vehicle", key="population", use_container_width=True):
+
+        if st.button("👥 **Population & Vehicle Trends**", key="population",
+                     use_container_width=True):
             st.session_state.page = "population"
             st.rerun()
-    
+
     with col2:
         st.markdown("""
-        <div class="feature-card secondary-feature">
-            <div style="font-size: 2.5rem; color: #059669; margin-bottom: 1rem;">🌱</div>
-            <h4>Environmental Impact</h4>
-            <p>Compare CO2 emissions across transport methods</p>
-            <div style="color: #059669; font-weight: 500; font-size: 0.9rem;">
-                🌿 View Emissions
+        <div class="feature-card secondary-feature" style="
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            color: #166534;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(34, 197, 94, 0.2);
+            text-align: center;
+            height: 280px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border: 1px solid #dcfce7;
+        ">
+            <div>
+                <div style="font-size: 3.5rem; margin-bottom: 1rem;">🌱</div>
+                <h4 style="margin-bottom: 1rem; font-size: 1.4rem; font-weight: 600;">Environmental Impact</h4>
+                <p style="font-size: 1rem; opacity: 0.8; line-height: 1.5;">
+                    Compare CO2 emissions across different transport methods and parking choices
+                </p>
             </div>
         </div>
         """, unsafe_allow_html=True)
-        
-        if st.button("🌱 Emission", key="environment", use_container_width=True):
+
+        if st.button("🌱 **Environmental Analysis**", key="environment",
+                     use_container_width=True):
             st.session_state.page = "environment"
-            st.rerun()
-    
-    with col3:
-        st.markdown("""
-        <div class="feature-card secondary-feature">
-            <div style="font-size: 2.5rem; color: #7c3aed; margin-bottom: 1rem;">📊</div>
-            <h4>Parking Supply Data</h4>
-            <p>Historical parking supply trends by location</p>
-            <div style="color: #7c3aed; font-weight: 500; font-size: 0.9rem;">
-                ⏰ View Trends
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        if st.button("📊 Historical Supply", key="supply", use_container_width=True):
-            st.session_state.page = "supply"
             st.rerun()
 
 
@@ -438,6 +479,14 @@ def show_population_vehicle_section():
     """
     Display the chart showing population growth and vehicle ownership.
     """
+    # 返回按钮 - 永远置顶
+    st.markdown('<div style="position: sticky; top: 0; z-index: 999; background: white; padding: 10px 0;">', unsafe_allow_html=True)
+    if st.button("← Back to Home", key="back_to_home_population",
+                 help="Return to main dashboard"):
+        st.session_state.page = "home"
+        st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
+
     st.markdown("""
     <div class="section-header">
         <div style="font-size: 2rem;">👥</div>
@@ -499,7 +548,14 @@ def show_population_vehicle_section():
             yaxis=dict(range=[0, y_max])
         )
 
-        st.plotly_chart(population_growth_plot, use_container_width=True)
+        # 配置去除工具栏中的reset和plotly logo
+        config = {
+            'displayModeBar': True,
+            'modeBarButtonsToRemove': ['resetScale2d', 'resetViewMapbox'],
+            'displaylogo': False
+        }
+
+        st.plotly_chart(population_growth_plot, use_container_width=True, config=config)
 
         years, vic_values = get_vehicle_data()
 
@@ -537,7 +593,7 @@ def show_population_vehicle_section():
             paper_bgcolor='white'
         )
 
-        st.plotly_chart(vehicle_fig, use_container_width=True)
+        st.plotly_chart(vehicle_fig, use_container_width=True, config=config)
 
     except Exception as e:
         st.error(f"Error loading data: {str(e)}")
@@ -550,12 +606,18 @@ def show_population_vehicle_section():
     </div>
     """, unsafe_allow_html=True)
 
-
 # Environmental Impact Section
 def show_environment_section():
     """
     显示环境影响图表 - 各交通方式的碳排放
     """
+    # 返回按钮 - 固定在顶部
+    with st.container():
+        if st.button("← Back to Home", key="back_to_home_environment",
+                     help="Return to main dashboard"):
+            st.session_state.page = "home"
+            st.rerun()
+
     st.markdown("""
     <div class="section-header">
         <div style="font-size: 2rem;">🌱</div>
@@ -602,7 +664,14 @@ def show_environment_section():
             paper_bgcolor='white'
         )
 
-        st.plotly_chart(carbon_emission_plot, use_container_width=True)
+        # 配置去除工具栏中的reset和plotly logo
+        config = {
+            'displayModeBar': True,
+            'modeBarButtonsToRemove': ['resetScale2d', 'resetViewMapbox'],
+            'displaylogo': False
+        }
+
+        st.plotly_chart(carbon_emission_plot, use_container_width=True, config=config)
 
     except Exception as e:
         st.error(f"Error loading environmental data: {str(e)}")
@@ -867,67 +936,6 @@ def show_availability_section():
 '''
 
 
-
-# Historical Supply Section
-def show_supply_section():
-    st.markdown("""
-    <div class="section-header">
-        <div style="font-size: 2rem;">📊</div>
-        <h2 class="section-title">Historical Parking Supply Data</h2>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # Location selection
-    selected_location = st.selectbox(
-        "Select Destination",
-        get_locations(),
-        key="supply_location"
-    )
-    
-    st.markdown(f"""
-    <div class="metric-container">
-        <h3 style="color: #1f2937; margin-bottom: 1rem;">
-            Daily Parking Supply Trend: {selected_location}
-        </h3>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # Create supply chart
-    df = get_parking_supply_data()
-    
-    fig = go.Figure()
-    
-    fig.add_trace(
-        go.Scatter(
-            x=df['Time'],
-            y=df['Available Spaces'],
-            mode='lines+markers',
-            name='Available Parking Spaces',
-            line=dict(color='#059669', width=3),
-            marker=dict(size=8, color='#059669')
-        )
-    )
-    
-    fig.update_layout(
-        title=f"Daily Parking Supply Trend - {selected_location}",
-        xaxis_title="Time of Day",
-        yaxis_title="Available Spaces",
-        height=400,
-        showlegend=True,
-        plot_bgcolor='white',
-        paper_bgcolor='white'
-    )
-    
-    st.plotly_chart(fig, use_container_width=True)
-    
-    st.markdown("""
-    <div class="insight-box-purple">
-        <strong>Supply Pattern:</strong> Parking availability typically peaks during mid-morning (10-11 AM) and mid-afternoon (2-3 PM). 
-        Plan your visit during these times for better parking options.
-    </div>
-    """, unsafe_allow_html=True)
-
-
 # Main application logic
 def main():
     # Initialize session state
@@ -954,10 +962,7 @@ def main():
             st.session_state.page = 'environment'
             st.rerun()
             
-        if st.button("📊 Historical Supply", use_container_width=True):
-            st.session_state.page = 'supply'
-            st.rerun()
-    
+
     # Show navigation bar
     if st.session_state.page != 'home':
         show_navigation()
@@ -971,8 +976,7 @@ def main():
         show_environment_section()
     elif st.session_state.page == 'availability':
         show_availability_section()
-    elif st.session_state.page == 'supply':
-        show_supply_section()
+
 
 if __name__ == "__main__":
     main()
