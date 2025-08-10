@@ -1,3 +1,4 @@
+import requests
 import streamlit as st
 import plotly.express as px
 import plotly.graph_objects as go
@@ -146,20 +147,65 @@ st.markdown("""
 
 # Data preparation functions
 @st.cache_data
-def get_population_data():
-    return pd.DataFrame({
-        'Year': ['2019', '2020', '2021', '2022', '2023', '2024'],
-        'Population (thousands)': [185, 142, 158, 172, 189, 201],
-        'Vehicle Registrations (thousands)': [89, 85, 91, 96, 102, 108]
-    })
+def get_population_data(api_url="https://ldr1cwcs34.execute-api.ap-southeast-2.amazonaws.com/getPopulationGrowth"):
+    """
+    Obtain population data from the API and process it into data for the CBD area.
+    """
+    # Fetch data from Lambda/API Gateway
+    response = requests.get(api_url)
+    data = response.json()  # Should be a list of dicts
+
+    # Convert to DataFrame
+    population_growth = pd.DataFrame(data)
+
+    # Filter only CBD data
+    regions = ["Melbourne CBD - East", "Melbourne CBD - North", "Melbourne CBD - West"]
+    population_growth_cbd = population_growth[population_growth["region"].isin(regions)]
+    year_columns = [col for col in population_growth.columns if
+                    col.isdigit() or (col.startswith("20") and col[2:].isdigit())]
+    population_growth_cbd = population_growth_cbd.set_index("region").loc[regions, year_columns].T.astype(float)
+
+    return population_growth_cbd, regions
 
 @st.cache_data
-def get_environmental_data():
-    return pd.DataFrame({
-        'Transport Method': ['Car (Solo)', 'Car (Shared)', 'Public Transport', 'Cycling', 'Walking'],
-        'CO2 Emissions (kg/trip)': [4.2, 2.1, 0.8, 0.0, 0.0],
-        'Color': ['#dc2626', '#f59e0b', '#059669', '#22c55e', '#10b981']
-    })
+def get_vehicle_data(api_url="https://ldr1cwcs34.execute-api.ap-southeast-2.amazonaws.com/getVehicleOwnership"):
+    """
+    Obtain the data on vehicle ownership in Victoria
+    """
+    # Fetch data from Lambda/API Gateway
+    response = requests.get(api_url)
+    data = response.json()  # Should be a list of dicts
+
+    # Convert to DataFrame
+    vehicle_ownership = pd.DataFrame(data)
+
+    # Filter only Victoria data
+    vic_data = vehicle_ownership[vehicle_ownership["state"] == "Vic."]
+
+    # Get year columns
+    years = [col for col in vehicle_ownership.columns if col.isdigit()]
+
+    # Extract Victoria values
+    vic_values = vic_data[years].values.flatten()
+
+    return years, vic_values
+
+@st.cache_data
+def get_environmental_data(api_url="https://ldr1cwcs34.execute-api.ap-southeast-2.amazonaws.com/getCarbonEmission"):
+    """
+    Obtain carbon emission data
+    """
+    # Fetch data from Lambda/API Gateway
+    response = requests.get(api_url)
+    data = response.json()  # Should be a list of dicts
+
+    # Convert to DataFrame
+    carbon_emission = pd.DataFrame(data)
+
+    # Sort by carbon_emission descending
+    carbon_emission_sorted = carbon_emission.sort_values(by='carbon_emission', ascending=False).reset_index(drop=True)
+
+    return carbon_emission_sorted
 
 def get_locations():
     return ['Collins Street', 'Bourke Street', 'Flinders Street', 'Queen Street', 
@@ -275,113 +321,185 @@ def show_homepage():
             st.session_state.page = "supply"
             st.rerun()
 
-# Population & Vehicle Growth Section
-def show_population_section():
+
+def show_population_vehicle_section():
+    """
+    Display the chart showing population growth and vehicle ownership.
+    """
     st.markdown("""
     <div class="section-header">
         <div style="font-size: 2rem;">👥</div>
         <h2 class="section-title">Population & Vehicle Growth Impact</h2>
     </div>
     """, unsafe_allow_html=True)
-    
+
     st.markdown("""
     <div class="metric-container">
         <p style="color: #6b7280; font-size: 1.1rem; margin-bottom: 2rem;">
-            This chart illustrates the relationship between Melbourne CBD's population growth and vehicle registration trends from 2019 to 2024.
+            This section illustrates the population growth trends across Melbourne CBD regions and vehicle ownership in Victoria.
         </p>
     </div>
     """, unsafe_allow_html=True)
-    
-    # Create the chart
-    df = get_population_data()
-    
-    fig = make_subplots(specs=[[{"secondary_y": False}]])
-    
-    fig.add_trace(
-        go.Bar(
-            x=df['Year'],
-            y=df['Population (thousands)'],
-            name='Population (thousands)',
-            marker_color='#1e3a8a',
-            opacity=0.8
+
+    try:
+        # 获取人口数据并显示人口增长图表
+        population_growth_cbd, regions = get_population_data()
+
+        # Get hex color codes for population chart
+        set2_colors_population = ["#66c2a5", "#fc8d62", "#8da0cb"]
+
+        # Create the population growth plot
+        population_growth_plot = go.Figure()
+        for i, region in enumerate(regions):
+            # Plot
+            population_growth_plot.add_trace(go.Scatter(
+                x=population_growth_cbd.index,
+                y=population_growth_cbd[region],
+                mode='lines',
+                stackgroup='one',
+                name=region,
+                line=dict(color=set2_colors_population[i])
+            ))
+
+        # Set y-axis to start at zero and go to the max value across all regions
+        # For stacked area, y_max should be the max of the row-wise sum (total population per year)
+        y_max = population_growth_cbd.sum(axis=1).max()
+
+        population_growth_plot.update_layout(
+            title=dict(
+                text="Population Growth: Melbourne CBD Regions",
+                x=0.5,
+                xanchor="center"
+            ),
+            xaxis_title="Year",
+            yaxis_title="Population",
+            height=500,
+            showlegend=True,
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=-0.3,  # Adjust as needed for spacing
+                xanchor="center",
+                x=0.5
+            ),
+            plot_bgcolor='white',
+            paper_bgcolor='white',
+            yaxis=dict(range=[0, y_max])
         )
-    )
-    
-    fig.add_trace(
-        go.Bar(
-            x=df['Year'],
-            y=df['Vehicle Registrations (thousands)'],
-            name='Vehicle Registrations (thousands)',
-            marker_color='#f59e0b',
-            opacity=0.8
+
+        st.plotly_chart(population_growth_plot, use_container_width=True)
+
+        years, vic_values = get_vehicle_data()
+
+        # Color for vehicle chart
+        vehicle_color = "#e78ac3"
+
+        # Create vehicle ownership plot
+        vehicle_fig = go.Figure()
+        vehicle_fig.add_trace(go.Scatter(
+            x=years,
+            y=vic_values,
+            mode='lines+markers',
+            name='Victoria Vehicle Ownership',
+            line=dict(color=vehicle_color)
+        ))
+
+        vehicle_fig.update_layout(
+            title=dict(
+                text="Vehicle Ownership: Victoria",
+                x=0.5,
+                xanchor="center"
+            ),
+            xaxis_title="Year",
+            yaxis_title="Vehicle Ownership",
+            height=500,
+            showlegend=True,
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=-0.3,
+                xanchor="center",
+                x=0.5
+            ),
+            plot_bgcolor='white',
+            paper_bgcolor='white'
         )
-    )
-    
-    fig.update_layout(
-        title="Population and Vehicle Registration Trends",
-        xaxis_title="Year",
-        yaxis_title="Count (thousands)",
-        barmode='group',
-        height=500,
-        showlegend=True,
-        plot_bgcolor='white',
-        paper_bgcolor='white'
-    )
-    
-    st.plotly_chart(fig, use_container_width=True)
-    
+
+        st.plotly_chart(vehicle_fig, use_container_width=True)
+
+    except Exception as e:
+        st.error(f"Error loading data: {str(e)}")
+        st.write("Please check the API connection and data format.")
+
     st.markdown("""
     <div class="insight-box">
-        <strong>Key Insight:</strong> Despite the COVID-19 impact in 2020, both population and vehicle registrations have shown steady recovery and growth, 
-        indicating increased pressure on CBD infrastructure and parking demand.
+        <strong>Key Insight:</strong> The combined trends of population growth in Melbourne CBD and increasing vehicle ownership in Victoria 
+        indicate growing pressure on urban infrastructure and parking demand, highlighting the need for sustainable transportation solutions.
     </div>
     """, unsafe_allow_html=True)
 
+
 # Environmental Impact Section
 def show_environment_section():
+    """
+    显示环境影响图表 - 各交通方式的碳排放
+    """
     st.markdown("""
     <div class="section-header">
         <div style="font-size: 2rem;">🌱</div>
         <h2 class="section-title">Environmental Impact Analysis</h2>
     </div>
     """, unsafe_allow_html=True)
-    
+
     st.markdown("""
     <div class="metric-container">
         <p style="color: #6b7280; font-size: 1.1rem; margin-bottom: 2rem;">
-            CO2 emissions comparison across different transportation methods for trips to Melbourne CBD.
+            This chart shows the average individual carbon emissions by different transport types, highlighting the environmental impact of transportation choices.
         </p>
     </div>
     """, unsafe_allow_html=True)
-    
-    # Create the chart
-    df = get_environmental_data()
-    
-    fig = go.Figure(data=[
-        go.Pie(
-            labels=df['Transport Method'],
-            values=df['CO2 Emissions (kg/trip)'],
-            marker_colors=df['Color'],
-            hole=0.4,
-            textinfo='label+percent',
-            textposition='outside'
+
+    try:
+        # 获取环境数据
+        carbon_emission_sorted = get_environmental_data()
+
+        # Color scheme for carbon emission chart
+        set2_colors = ["#66c2a5", "#fc8d62", "#8da0cb", "#e78ac3", "#a6d854", "#ffd92f", "#e5c494", "#b3b3b3"]
+
+        # Create carbon emission bar chart
+        carbon_emission_plot = go.Figure(
+            go.Bar(
+                x=carbon_emission_sorted['transport'],
+                y=carbon_emission_sorted['carbon_emission'],
+                marker_color=set2_colors[:len(carbon_emission_sorted)],
+                text=[str(int(round(val))) for val in carbon_emission_sorted['carbon_emission']],
+                textposition='outside'
+            )
         )
-    ])
-    
-    fig.update_layout(
-        title="CO2 Emissions by Transport Method",
-        height=500,
-        showlegend=True,
-        plot_bgcolor='white',
-        paper_bgcolor='white'
-    )
-    
-    st.plotly_chart(fig, use_container_width=True)
-    
+
+        carbon_emission_plot.update_layout(
+            title=dict(
+                text="Average Individual Carbon Emission by Transport Type (Kg/Month)",
+                x=0.5,
+                xanchor="center"
+            ),
+            xaxis_title="Transport Type",
+            yaxis_title="Carbon Emission (Kg/Month)",
+            height=500,
+            plot_bgcolor='white',
+            paper_bgcolor='white'
+        )
+
+        st.plotly_chart(carbon_emission_plot, use_container_width=True)
+
+    except Exception as e:
+        st.error(f"Error loading environmental data: {str(e)}")
+        st.write("Please check the API connection and data format.")
+
     st.markdown("""
-    <div class="insight-box-green">
-        <strong>Environmental Insight:</strong> Switching from solo car travel to public transport can reduce CO2 emissions by up to 81% per trip. 
-        Cycling and walking produce zero emissions while providing health benefits.
+    <div class="insight-box">
+        <strong>Environmental Insight:</strong> The data reveals significant differences in carbon emissions across transport modes, 
+        demonstrating the environmental benefits of choosing more sustainable transportation options like public transport and cycling.
     </div>
     """, unsafe_allow_html=True)
 
@@ -509,6 +627,7 @@ def show_supply_section():
     </div>
     """, unsafe_allow_html=True)
 
+
 # Main application logic
 def main():
     # Initialize session state
@@ -547,7 +666,7 @@ def main():
     if st.session_state.page == 'home':
         show_homepage()
     elif st.session_state.page == 'population':
-        show_population_section()
+        show_population_vehicle_section()
     elif st.session_state.page == 'environment':
         show_environment_section()
     elif st.session_state.page == 'availability':
