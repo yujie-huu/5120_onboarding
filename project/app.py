@@ -449,13 +449,11 @@ def show_homepage():
     """, unsafe_allow_html=True)
 
     # Main Function - Parking Availability (Occupies Prominent Position)
-    # 使用st.container让整个卡片可点击
     with st.container():
         if st.button("", key="main_parking_card", use_container_width=True):
             st.session_state.page = "availability"
             st.rerun()
         
-        # 卡片内容（现在整个区域都可点击）
         st.markdown("""
         <div class="feature-card main-feature" style="
             background: linear-gradient(135deg, #ff9a56 0%, #ff6b35 100%);
