@@ -47,7 +47,7 @@ st.markdown("""
         border: 1px solid #e5e7eb;
         text-align: center;
         margin: 1rem 0;
-        transition: transform 0.2s;
+        transition: transform 0.2s, box-shadow 0.2s;
     }
     
     .feature-card:hover {
@@ -60,6 +60,13 @@ st.markdown("""
         color: white;
         padding: 3rem;
         margin: 2rem 0;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .main-feature:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 25px -5px rgba(255, 107, 53, 0.4);
     }
     
     .main-feature h3 {
@@ -71,6 +78,16 @@ st.markdown("""
     .main-feature p {
         color: #fed7aa !important;
         font-size: 1.1rem;
+    }
+    
+    .secondary-feature {
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .secondary-feature:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.15);
     }
     
     .secondary-feature h4 {
@@ -141,7 +158,27 @@ st.markdown("""
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         margin: 1rem 0;
     }
-
+    
+    /* 添加可点击卡片的视觉提示 */
+    .clickable-card {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .clickable-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s;
+    }
+    
+    .clickable-card:hover::before {
+        left: 100%;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -412,42 +449,44 @@ def show_homepage():
     """, unsafe_allow_html=True)
 
     # Main Function - Parking Availability (Occupies Prominent Position)
-    st.markdown("""
-    <div class="feature-card main-feature" style="
-        background: linear-gradient(135deg, #ff9a56 0%, #ff6b35 100%);
-        color: white;
-        padding: 2.5rem;
-        border-radius: 20px;
-        box-shadow: 0 10px 30px rgba(255, 107, 53, 0.3);
-        text-align: center;
-        margin: 2rem 0;
-        border: none;
-    ">
-        <div style="font-size: 5rem; margin-bottom: 1rem;">🅿️</div>
-        <h2 style="margin-bottom: 1rem; font-size: 2.2rem; font-weight: 700;">Real-Time Parking Availability</h2>
-        <p style="font-size: 1.3rem; margin-bottom: 2rem; opacity: 0.9;">
-            Find available parking spaces across Melbourne CBD locations in real-time
-        </p>
-        <div style="
-            background: rgba(255, 255, 255, 0.2);
-            padding: 1rem 2rem;
-            border-radius: 50px;
-            display: inline-block;
-            font-weight: bold;
-            font-size: 1.1rem;
-        ">
-            📍 Check Available Spaces Now
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    # Main function button
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        if st.button("🅿️ **FIND PARKING NOW**", key="main_parking",
-                     use_container_width=True, type="primary"):
+    # 使用st.container让整个卡片可点击
+    with st.container():
+        if st.button("", key="main_parking_card", use_container_width=True):
             st.session_state.page = "availability"
             st.rerun()
+        
+        # 卡片内容（现在整个区域都可点击）
+        st.markdown("""
+        <div class="feature-card main-feature" style="
+            background: linear-gradient(135deg, #ff9a56 0%, #ff6b35 100%);
+            color: white;
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(255, 107, 53, 0.3);
+            text-align: center;
+            margin: 2rem 0;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        ">
+            <div style="font-size: 5rem; margin-bottom: 1rem;">🅿️</div>
+            <h2 style="margin-bottom: 1rem; font-size: 2.2rem; font-weight: 700;">Real-Time Parking Availability</h2>
+            <p style="font-size: 1.3rem; margin-bottom: 2rem; opacity: 0.9;">
+                Find available parking spaces across Melbourne CBD locations in real-time
+            </p>
+            <div style="
+                background: rgba(255, 255, 255, 0.2);
+                padding: 1rem 2rem;
+                border-radius: 50px;
+                display: inline-block;
+                font-weight: bold;
+                font-size: 1.1rem;
+            ">
+                📍 Click anywhere on this card to access parking information
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
 
     # Horizontal line
     st.markdown("<hr style='margin: 3rem 0; border: 1px solid #e5e7eb;'>", unsafe_allow_html=True)
@@ -464,64 +503,88 @@ def show_homepage():
     col1, col2 = st.columns(2, gap="large")
 
     with col1:
-        st.markdown("""
-        <div class="feature-card secondary-feature" style="
-            background: linear-gradient(135deg, #fef3e2 0%, #fed7aa 100%);
-            color: #92400e;
-            padding: 2rem;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(251, 146, 60, 0.2);
-            text-align: center;
-            height: 280px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            border: 1px solid #fed7aa;
-        ">
-            <div>
-                <div style="font-size: 3.5rem; margin-bottom: 1rem;">👥</div>
-                <h4 style="margin-bottom: 1rem; font-size: 1.4rem; font-weight: 600;">Population & Vehicle Growth</h4>
-                <p style="font-size: 1rem; opacity: 0.8; line-height: 1.5;">
-                    Analyze population and vehicle registration trends affecting parking demand
-                </p>
+        # Clickable population and vehicle growth card
+        with st.container():
+            if st.button("", key="population_card", use_container_width=True):
+                st.session_state.page = "population"
+                st.rerun()
+            
+            st.markdown("""
+            <div class="feature-card secondary-feature clickable-card" style="
+                background: linear-gradient(135deg, #fef3e2 0%, #fed7aa 100%);
+                color: #92400e;
+                padding: 2rem;
+                border-radius: 15px;
+                box-shadow: 0 4px 15px rgba(251, 146, 60, 0.2);
+                text-align: center;
+                height: 280px;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                border: 1px solid #fed7aa;
+                cursor: pointer;
+                transition: transform 0.2s, box-shadow 0.2s;
+            ">
+                <div>
+                    <div style="font-size: 3.5rem; margin-bottom: 1rem;">👥</div>
+                    <h4 style="margin-bottom: 1rem; font-size: 1.4rem; font-weight: 600;">Population & Vehicle Growth</h4>
+                    <p style="font-size: 1rem; opacity: 0.8; line-height: 1.5;">
+                        Analyze population and vehicle registration trends affecting parking demand
+                    </p>
+                </div>
+                <div style="
+                    background: rgba(146, 64, 14, 0.1);
+                    padding: 0.5rem 1rem;
+                    border-radius: 25px;
+                    font-size: 0.9rem;
+                    font-weight: 500;
+                ">
+                    🖱️ Click anywhere on this card
+                </div>
             </div>
-        </div>
-        """, unsafe_allow_html=True)
-
-        if st.button("👥 **Population & Vehicle Trends**", key="population",
-                     use_container_width=True):
-            st.session_state.page = "population"
-            st.rerun()
+            """, unsafe_allow_html=True)
 
     with col2:
-        st.markdown("""
-        <div class="feature-card secondary-feature" style="
-            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-            color: #166534;
-            padding: 2rem;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(34, 197, 94, 0.2);
-            text-align: center;
-            height: 280px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            border: 1px solid #dcfce7;
-        ">
-            <div>
-                <div style="font-size: 3.5rem; margin-bottom: 1rem;">🌱</div>
-                <h4 style="margin-bottom: 1rem; font-size: 1.4rem; font-weight: 600;">Environmental Impact</h4>
-                <p style="font-size: 1rem; opacity: 0.8; line-height: 1.5;">
-                    Compare CO2 emissions across different transport methods and parking choices
-                </p>
+        # Clickable environmental card
+        with st.container():
+            if st.button("", key="environment_card", use_container_width=True):
+                st.session_state.page = "environment"
+                st.rerun()
+            
+            st.markdown("""
+            <div class="feature-card secondary-feature clickable-card" style="
+                background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+                color: #166534;
+                padding: 2rem;
+                border-radius: 15px;
+                box-shadow: 0 4px 15px rgba(34, 197, 94, 0.2);
+                text-align: center;
+                height: 280px;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                border: 1px solid #dcfce7;
+                cursor: pointer;
+                transition: transform 0.2s, box-shadow 0.2s;
+            ">
+                <div>
+                    <div style="font-size: 3.5rem; margin-bottom: 1rem;">🌱</div>
+                    <h4 style="margin-bottom: 1rem; font-size: 1.4rem; font-weight: 600;">Environmental Impact</h4>
+                    <p style="font-size: 1rem; opacity: 0.8; line-height: 1.5;">
+                        Compare CO2 emissions across different transport methods and parking choices
+                    </p>
+                </div>
+                <div style="
+                    background: rgba(22, 101, 52, 0.1);
+                    padding: 0.5rem 1rem;
+                    border-radius: 25px;
+                    font-size: 0.9rem;
+                    font-weight: 500;
+                ">
+                    🖱️ Click anywhere on this card
+                </div>
             </div>
-        </div>
-        """, unsafe_allow_html=True)
-
-        if st.button("🌱 **Environmental Analysis**", key="environment",
-                     use_container_width=True):
-            st.session_state.page = "environment"
-            st.rerun()
+            """, unsafe_allow_html=True)
 
 
 def show_population_vehicle_section():
@@ -543,8 +606,10 @@ def show_population_vehicle_section():
 
     st.markdown("""
     <div class="metric-container">
-        <p style="color: #6b7280; font-size: 1.1rem; margin-bottom: 2rem;">
-            This section illustrates the population growth trends across Melbourne CBD regions and vehicle ownership in Victoria.
+        <p style="color: #6b7280; font-size: 1.1rem; margin-bottom: 1rem;">
+            "Behind every car on the road is a story, someone late for a meeting, a parent on the school run, 
+            a dreamer chasing a deadline," I explain. Over the years, Melbourne’s streets have seen more people, 
+            more vehicles, and more pressure on space. Here is how our city has changed and what it might mean for tomorrow.
         </p>
     </div>
     """, unsafe_allow_html=True)
@@ -596,6 +661,19 @@ def show_population_vehicle_section():
         )
 
         st.plotly_chart(population_growth_plot, use_container_width=True)
+        
+        st.markdown("""
+        <div class="insight-box">
+            <strong>Our City, State, and Country&apos;s Population Trends</strong>
+            <p>While the roads tell one story, Melbourne&apos;s population tells another. Between 2011 and 2021, Melbourne recorded the largest growth of any Australian capital. The city added 806,791 people. The centre of Victoria&apos;s population moved 1.2 km closer to the CBD, a clear sign that more people are choosing to live near the city&apos;s heart.</p>
+            <p>The growth wasn&apos;t evenly spread across the CBD&apos;s three regions:</p>
+            <ul>
+                <li>East CBD: +28.5% growth</li>
+                <li>West CBD: +116.4% growth (more than doubled)</li>
+                <li>North CBD: +172.4% growth (nearly tripled)</li>
+            </ul>
+        </div>
+        """, unsafe_allow_html=True)
 
         years, vic_values = get_vehicle_data()
 
@@ -635,14 +713,31 @@ def show_population_vehicle_section():
 
         st.plotly_chart(vehicle_fig, use_container_width=True)
 
+        st.markdown("""
+        <div class="insight-box">
+            <strong>Our Vehicle Ownership Trends and Strategies</strong>
+            <p>Not long ago, Victoria’s streets echoed with the steady rise of car ownership. The Motor Vehicle Census paints a more complex picture. 2018–2019: +4.5% growth. 2019–2020: +4.0%. 2020–2021: +3.5%. The slowdown arrived alongside the COVID-19 pandemic. This raises the question: is this a permanent shift in travel habits or just a temporary pause?</p>
+            <p>The City of Melbourne is already preparing for change. Their Transport Strategy 2030 sets an ambitious direction. Public transport’s share of travel rose from 45% to 53% between 2001 and 2016. Private car use fell from 48% to 37%. By 2030, they aim to halve central city through-traffic compared to 2022. The plan involves massive investment in public transport expansion, walking-friendly streets, and cycling networks.</p>
+        </div>
+        """, unsafe_allow_html=True)
+
     except Exception as e:
         st.error(f"Error loading data: {str(e)}")
         st.write("Please check the API connection and data format.")
 
     st.markdown("""
-    <div class="insight-box">
-        <strong>Key Insight:</strong> The combined trends of population growth in Melbourne CBD and increasing vehicle ownership in Victoria 
-        indicate growing pressure on urban infrastructure and parking demand, highlighting the need for sustainable transportation solutions.
+    <div class="metric-container">
+        <p style="color: #6b7280; font-size: 1.1rem; margin-bottom: 2rem;">
+            Together, these trends show a Melbourne in transformation.
+            <ul>
+                <li>Car growth is slowing, possibly signalling a shift toward sustainable travel</li>
+                <li>Public transport, walking, and cycling are on the rise</li>
+                <li>CBD population is surging, especially in the North and West</li>
+                <li>Urban density is climbing fast, reshaping the way the city lives and moves</li>
+                <li>Parking is becoming harder as more residents and commuters compete for fewer spaces, with some parking removed to make way for transport and pedestrian upgrades</li>
+            </ul>
+            For Melbourne commuters, these insights reveal why finding parking is increasingly difficult in the CBD and how population and transport trends are shaping congestion. This knowledge can help individuals adapt travel habits, plan trips more efficiently, and anticipate the future of urban mobility.
+        </p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -669,7 +764,9 @@ def show_environment_section():
     st.markdown("""
     <div class="metric-container">
         <p style="color: #6b7280; font-size: 1.1rem; margin-bottom: 2rem;">
-            This chart shows the average individual carbon emissions by different transport types, highlighting the environmental impact of transportation choices.
+            "Every journey leaves a mark, but some marks fade faster than others," I remind you. 
+            From solo car rides to shared trips, trains, bikes, and walking, each choice tells a different environmental story. 
+            Let us see which ones are the quiet heroes of Melbourne’s air quality.
         </p>
     </div>
     """, unsafe_allow_html=True)
@@ -720,9 +817,28 @@ def show_environment_section():
 
     st.markdown("""
     <div class="insight-box">
-        <strong>Environmental Insight:</strong> The data reveals significant differences in carbon emissions across transport modes, 
-        demonstrating the environmental benefits of choosing more sustainable transportation options like public transport and cycling.
-    </div>
+        <strong>My Carbon Footprint:</strong> 
+        <p>Your mode of travel has a direct impact on your carbon emissions. The difference between options is striking:</p>
+        <ul>
+            <li>Petrol vehicles: ~3,750 kg CO₂/month (highest emissions)</li>
+            <li>Diesel/LPG vehicles: Above 3,000 kg CO₂/month</li>
+            <li>Hybrid vehicles: ~2,708 kg CO₂/month</li>
+            <li>Electric vehicles: ~1,800–2,000 kg CO₂/month</li>
+            <li>Public transport: Similar low range of ~1,800–2,000 kg CO₂/month</li>
+            <li>Cycling or walking: Lowest emissions, almost negligible compared to motor vehicles</li>
+        </ul>
+        <br>
+        <strong>What this means: </strong> Choosing public transport, cycling, walking, or electric vehicles can cut your monthly carbon footprint by over 40% compared to hybrid cars, and by more than 50% compared to petrol vehicles.
+        <br>
+        <br>
+        <strong>Why This Matters for You as a Commuter</strong>
+        <ul>
+            <li>Clear environmental impact: You can see exactly how your travel choice translates into CO₂ emissions saved each month.</li>
+            <li>Informed, greener decisions: Switching from a petrol car to public transport could save roughly 1,900 kg of CO₂ every month.</li>
+            <li>Collective benefit: If thousands of commuters made the same shift, Melbourne’s air quality would improve dramatically.</li>
+            <li>Personal contribution to a sustainable future: Every trip you make using low-emission transport supports the city’s climate goals.</li>
+        </ul>
+    </div> 
     """, unsafe_allow_html=True)
 
 # Parking Availability Section
