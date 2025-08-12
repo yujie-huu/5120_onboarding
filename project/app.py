@@ -936,6 +936,76 @@ def show_availability_section():
                     st.dataframe(zones_display, use_container_width=True)
                 except KeyError:
                     st.dataframe(zones_df, use_container_width=True)
+                
+                # legend
+                left, right = st.columns([2,1], gap="large")
+
+                with right :
+                    st.markdown("""
+                    <div style="
+                        background: rgba(248, 250, 252, 0.9);
+                        border: 1px solid rgba(203, 213, 225, 0.6);
+                        border-radius: 8px;
+                        padding: 1rem;
+                        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+                        margin-bottom: 1rem;">
+                        <h4 style="text-align: center; margin-bottom: 1rem; color: #374151;">🚗 Zone Types</h4>
+                        <div style="justify-content: center;">
+                            <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
+                                <div style="
+                                    background: linear-gradient(135deg,rgb(152, 223, 178),rgb(99, 163, 124));
+                                    color: white;
+                                    border-radius: 8px;
+                                    padding: 0.4rem 0.6rem;
+                                    font-weight: bold;
+                                    font-size: 0.8rem;
+                                    min-width: 50px;
+                                    text-align: center;
+                                    box-shadow: 0 2px 4px rgba(34, 197, 94, 0.3);">FP1P</div>
+                                <span style="margin-left: 0.75rem; font-size: 0.85rem; color: #374151;">Free Parking 1 hour</span>
+                            </div>
+                            <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
+                                <div style="
+                                    background: linear-gradient(135deg,rgb(236, 210, 165),rgb(198, 162, 120));
+                                    color: white;
+                                    border-radius: 8px;
+                                    padding: 0.4rem 0.6rem;
+                                    font-weight: bold;
+                                    font-size: 0.8rem;
+                                    min-width: 50px;
+                                    text-align: center;
+                                    box-shadow: 0 2px 4px rgba(245, 158, 11, 0.3);">MP2P</div>
+                                <span style="margin-left: 0.75rem; font-size: 0.85rem; color: #374151;">Meter Parking 2 hours limit</span>
+                            </div>
+                            <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
+                                <div style="
+                                    background: linear-gradient(135deg,rgb(163, 186, 223),rgb(112, 140, 200));
+                                    color: white;
+                                    border-radius: 8px;
+                                    padding: 0.4rem 0.6rem;
+                                    font-weight: bold;
+                                    font-size: 0.8rem;
+                                    min-width: 50px;
+                                    text-align: center;
+                                    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);">LZ30</div>
+                                <span style="margin-left: 0.75rem; font-size: 0.85rem; color: #374151;">Loading Zone 30 minutes limit</span>
+                            </div>
+                            <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
+                                <div style="
+                                    background: linear-gradient(135deg,rgb(208, 187, 228),rgb(179, 145, 211));
+                                    color: white;
+                                    border-radius: 8px;
+                                    padding: 0.4rem 0.6rem;
+                                    font-weight: bold;
+                                    font-size: 0.8rem;
+                                    min-width: 50px;
+                                    text-align: center;
+                                    box-shadow: 0 2px 4px rgba(168, 85, 247, 0.3);">QP</div>
+                                <span style="margin-left: 0.75rem; font-size: 0.85rem; color: #374151;">Quarter Parking (15 minutes)</span>
+                            </div>
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
             else:
                 st.warning(f"Unable to obtain parking zone restriction data for {confirmed_street}")
 
