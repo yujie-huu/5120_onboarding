@@ -162,7 +162,7 @@ st.markdown("""
         margin: 1rem 0;
     }
     
-    /* 添加可点击卡片的视觉提示 */
+    /* Add visual hints for clickable cards */
     .clickable-card {
         position: relative;
         overflow: hidden;
@@ -207,6 +207,60 @@ def get_population_data(api_url="https://ldr1cwcs34.execute-api.ap-southeast-2.a
     population_growth_cbd = population_growth_cbd.set_index("region").loc[regions, year_columns].T.astype(float)
 
     return population_growth_cbd, regions
+
+# Route synchronization and clickable card functionality
+def sync_page_from_query():
+    """Sync page from URL query parameters to session state"""
+    try:
+        q = st.experimental_get_query_params().get("page", [None])[0]
+        if q and q in ["home", "availability", "population", "environment"]:
+            st.session_state.page = q
+    except Exception:
+        pass  # Fallback to session state if query params fail
+
+# Initialize session state and sync with URL
+if "page" not in st.session_state:
+    st.session_state.page = "home"
+sync_page_from_query()
+
+# Clickable card CSS
+st.markdown("""
+<style>
+    .click-card { 
+        position: relative; 
+        border-radius: 16px; 
+        padding: 2rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,.06); 
+        transition: .2s ease;
+        border: 1px solid rgba(0,0,0,.05); 
+        cursor: pointer;
+    }
+    .click-card:hover { 
+        transform: translateY(-2px);
+        box-shadow: 0 14px 40px rgba(0,0,0,.08); 
+    }
+    .click-card a.stretched { 
+        position: absolute; 
+        inset: 0; 
+        border-radius: inherit; 
+        z-index: 10; 
+        text-decoration: none; 
+    }
+    .click-card .icon { 
+        font-size: 3.2rem; 
+        margin-bottom: .75rem; 
+    }
+    .click-card h4 { 
+        margin: .5rem 0 1rem; 
+        font-weight: 700; 
+    }
+    .click-card p { 
+        opacity: .85; 
+        line-height: 1.6; 
+        margin: 0; 
+    }
+</style>
+""", unsafe_allow_html=True)
 
 @st.cache_data
 def get_vehicle_data(api_url="https://ldr1cwcs34.execute-api.ap-southeast-2.amazonaws.com/getVehicleOwnership"):
@@ -484,41 +538,26 @@ def show_homepage():
     """, unsafe_allow_html=True)
 
     # Main Function - Parking Availability (Occupies Prominent Position)
-    with st.container():
-        if st.button("", key="main_parking_card", use_container_width=True):
-            st.session_state.page = "availability"
-            st.rerun()
-        
-        st.markdown("""
-        <div class="feature-card main-feature" style="
-            background: linear-gradient(135deg, #ff9a56 0%, #ff6b35 100%);
-            color: white;
-            padding: 2.5rem;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(255, 107, 53, 0.3);
-            text-align: center;
-            margin: 2rem 0;
-            border: none;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+    st.markdown("""
+    <div class="click-card" style="background: linear-gradient(135deg,#ff9a56 0%,#ff6b35 100%); color:white; text-align:center; border:none; margin: 2rem 0;">
+        <div class="icon">🅿️</div>
+        <h4 style="font-size: 1.8rem;">Real-Time Parking Availability</h4>
+        <p style="font-size: 1.3rem; margin-bottom: 2rem; opacity: 0.9;">
+            Find available parking spaces across Melbourne CBD locations in real-time
+        </p>
+        <div style="
+            background: rgba(255, 255, 255, 0.2);
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            display: inline-block;
+            font-weight: bold;
+            font-size: 1.1rem;
         ">
-            <div style="font-size: 5rem; margin-bottom: 1rem;">🅿️</div>
-            <h2 style="margin-bottom: 1rem; font-size: 2.2rem; font-weight: 700;">Real-Time Parking Availability</h2>
-            <p style="font-size: 1.3rem; margin-bottom: 2rem; opacity: 0.9;">
-                Find available parking spaces across Melbourne CBD locations in real-time
-            </p>
-            <div style="
-                background: rgba(255, 255, 255, 0.2);
-                padding: 1rem 2rem;
-                border-radius: 50px;
-                display: inline-block;
-                font-weight: bold;
-                font-size: 1.1rem;
-            ">
-                📍 Click anywhere on this card to access parking information
-            </div>
+            📍 Click to access parking information
         </div>
-        """, unsafe_allow_html=True)
+        <a class="stretched" href="?page=availability" aria-label="Open availability"></a>
+    </div>
+    """, unsafe_allow_html=True)
 
 
     # Horizontal line
@@ -536,86 +575,26 @@ def show_homepage():
     col1, col2 = st.columns(2, gap="large")
 
     with col1:
-        # Clickable population and vehicle growth card
-        with st.container():
-            if st.button("", key="population_card", use_container_width=True):
-                st.session_state.page = "population"
-                st.rerun()
-            
-            st.markdown("""
-            <div class="feature-card secondary-feature clickable-card" style="
-                background: linear-gradient(135deg, #fef3e2 0%, #fed7aa 100%);
-                color: #92400e;
-                padding: 2rem;
-                border-radius: 15px;
-                box-shadow: 0 4px 15px rgba(251, 146, 60, 0.2);
-                text-align: center;
-                height: 280px;
-                display: flex;
-                flex-direction: column;
-                justify-content: space-between;
-                border: 1px solid #fed7aa;
-                cursor: pointer;
-                transition: transform 0.2s, box-shadow 0.2s;
-            ">
-                <div>
-                    <div style="font-size: 3.5rem; margin-bottom: 1rem;">👥</div>
-                    <h4 style="margin-bottom: 1rem; font-size: 1.4rem; font-weight: 600;">Population & Vehicle Growth</h4>
-                    <p style="font-size: 1rem; opacity: 0.8; line-height: 1.5;">
-                        Analyze population and vehicle registration trends affecting parking demand
-                    </p>
-                </div>
-                <div style="
-                    background: rgba(146, 64, 14, 0.1);
-                    padding: 0.5rem 1rem;
-                    border-radius: 25px;
-                    font-size: 0.9rem;
-                    font-weight: 500;
-                ">
-                    🖱️ Click anywhere on this card
-                </div>
+        st.markdown("""
+        <div class="click-card" style="background:linear-gradient(135deg,#fef3e2 0%, #fed7aa 100%); color:#3a2a11; height: 280px; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+                <div class="icon">👥</div>
+                <h4>Population & Vehicle Growth</h4>
+                <p>Analyze population and vehicle registration trends affecting parking demand</p>
             </div>
-            """, unsafe_allow_html=True)
+            <a class="stretched" href="?page=population" aria-label="Open population"></a>
+        </div>
+        """, unsafe_allow_html=True)
 
-    with col2:
-        # Clickable environmental card
-        with st.container():
-            if st.button("", key="environment_card", use_container_width=True):
-                st.session_state.page = "environment"
-                st.rerun()
-            
+        with col2:
             st.markdown("""
-            <div class="feature-card secondary-feature clickable-card" style="
-                background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-                color: #166534;
-                padding: 2rem;
-                border-radius: 15px;
-                box-shadow: 0 4px 15px rgba(34, 197, 94, 0.2);
-                text-align: center;
-                height: 280px;
-                display: flex;
-                flex-direction: column;
-                justify-content: space-between;
-                border: 1px solid #dcfce7;
-                cursor: pointer;
-                transition: transform 0.2s, box-shadow 0.2s;
-            ">
+            <div class="click-card" style="background:linear-gradient(135deg,#f0fdf4 0%, #dcfce7 100%); color:#0e5132; height: 280px; display: flex; flex-direction: column; justify-content: space-between;">
                 <div>
-                    <div style="font-size: 3.5rem; margin-bottom: 1rem;">🌱</div>
-                    <h4 style="margin-bottom: 1rem; font-size: 1.4rem; font-weight: 600;">Environmental Impact</h4>
-                    <p style="font-size: 1rem; opacity: 0.8; line-height: 1.5;">
-                        Compare CO2 emissions across different transport methods and parking choices
-                    </p>
+                    <div class="icon">🌱</div>
+                    <h4>Environmental Impact</h4>
+                    <p>Compare CO₂ emissions across transport methods and parking choices</p>
                 </div>
-                <div style="
-                    background: rgba(22, 101, 52, 0.1);
-                    padding: 0.5rem 1rem;
-                    border-radius: 25px;
-                    font-size: 0.9rem;
-                    font-weight: 500;
-                ">
-                    🖱️ Click anywhere on this card
-                </div>
+                <a class="stretched" href="?page=environment" aria-label="Open environment"></a>
             </div>
             """, unsafe_allow_html=True)
 
