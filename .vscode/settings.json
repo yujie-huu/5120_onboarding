@@ -1,4 +1,0 @@
-{
-    "dotnetAcquisitionExtension.installTimeoutValue": 60000,
-    "mssql.objectExplorer.expandTimeout": 60000
-}

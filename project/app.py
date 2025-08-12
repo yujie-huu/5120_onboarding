@@ -1,8 +1,11 @@
 import json
 import re
+from map import generate_map
+
 
 import pandas as pd
 import plotly.graph_objects as go
+import pydeck as pdk
 import requests
 import streamlit as st
 
@@ -380,54 +383,86 @@ def get_parking_zones_info(street_name):
         return pd.DataFrame()
 
 
-def get_parking_status(street_name):
+def get_parking_status(street_name: str):
     """
-    Obtain the parking status of the designated street
+    Obtain the parking status of the designated street.
+    Returns:
+        status_df: DataFrame with parking status info (no location column)
+        zone_location_map: dict mapping zone_number -> (lat, lon, status)
     """
     try:
-        print(f"Fetching parking space status for {street_name}...")
-
-        # Prepare request data
-        request_data = {
-            "on_street_list": [street_name]
-        }
-
-        status_response = requests.post(
+        resp = requests.post(
             "https://ldr1cwcs34.execute-api.ap-southeast-2.amazonaws.com/status",
-            json=request_data,
-            headers={'Content-Type': 'application/json'},
-            timeout=30
+            json={"on_street_list": [street_name]},
+            headers={"Content-Type": "application/json"},
+            timeout=30,
+        )
+        if resp.status_code != 200:
+            return pd.DataFrame(), {}
+
+        data = resp.json()
+        result = data.get("result", [])
+        if not isinstance(result, list) or not result:
+            return pd.DataFrame(), {}
+
+        df = pd.DataFrame(result)
+
+        # Standardize column names: lowercase, trim, spaces/hyphens -> underscore
+        df.columns = (
+            df.columns
+              .str.strip()
+              .str.lower()
+              .str.replace(r"[ \-]+", "_", regex=True)
         )
 
-        print(f"Status API status code: {status_response.status_code}")
+        # Normalize key columns (align common aliases)
+        rename_plan = {
+            "kerbsideid": "kerbside_id",
+            "zone_number": "zone_number",
+            "zone number": "zone_number",
+            "zonenumber": "zone_number",
+            "zone": "zone_number",
+            "status_description": "status",
+            "status description": "status",
+            "status": "status",
+            "location": "location",
+            "coordinates": "location",
+            "coord": "location",
+            "latlon": "location",
+        }
+        df = df.rename(columns={k: v for k, v in rename_plan.items() if k in df.columns})
 
-        status_df = pd.DataFrame()
+        zone_col = "zone_number" if "zone_number" in df.columns else None
+        loc_col  = "location"    if "location"    in df.columns else None
+        stat_col = "status"      if "status"      in df.columns else None
 
-        if status_response.status_code == 200:
-            status_data = status_response.json()
-            print(f"Status API response type: {type(status_data)}")
-            print(f"Status API response content: {status_data}")
+        zone_location_map = {}
+        if zone_col and loc_col:
+            # Build zone_number -> (lat, lon, status)
+            st_series = df[stat_col] if stat_col else pd.Series(["Unknown"] * len(df))
+            for zn, loc, stt in zip(df[zone_col], df[loc_col], st_series):
+                if pd.isna(zn) or pd.isna(loc):
+                    continue
+                # Support both English/Chinese commas
+                parts = re.split(r"[，,]\s*", str(loc).strip(), maxsplit=1)
+                if len(parts) != 2:
+                    continue
+                try:
+                    lat, lon = float(parts[0]), float(parts[1])
+                except ValueError:
+                    continue
+                zone_location_map[str(zn)] = (lat, lon, str(stt) if pd.notna(stt) else "Unknown")
 
-            if 'result' in status_data:
-                status_df = pd.DataFrame(status_data['result'])
-                print(f"Number of rows in parking status data: {len(status_df)}")
+            # Do not keep the 'location' column in the returned table
+            if loc_col in df.columns:
+                df = df.drop(columns=[loc_col])
 
-                if not status_df.empty:
-                    print(f"Status data columns: {status_df.columns.tolist()}")
-                    print("First 10 rows:")
-                    df_display = status_df.head(10).reset_index(drop=True)
-                    df_display.index = df_display.index + 1
-                    print(df_display)
-            else:
-                print("Field 'result' not found in status data")
-        else:
-            print(f"Status API request failed: {status_response.status_code} - {status_response.text}")
+        return df, zone_location_map
 
-        return status_df
+    except Exception:
+        # On exception, keep the return contract
+        return pd.DataFrame(), {}
 
-    except Exception as e:
-        print(f"Error while fetching parking status: {str(e)}")
-        return pd.DataFrame()
 
 # Navigation
 def show_navigation():
@@ -926,9 +961,12 @@ def show_availability_section():
                 st.warning(f"Unable to obtain parking zone restriction data for {confirmed_street}")
 
             # Parking status information
-            status_df = get_parking_status(confirmed_street)
+            status_df, zone_location_map = get_parking_status(confirmed_street)
+
             if status_df is not None and not status_df.empty:
                 st.subheader("Current Parking Space Status")
+
+
                 if 'Status_Description' in status_df.columns:
                     status_summary = status_df['Status_Description'].value_counts().reset_index()
                     status_summary.columns = ['Status', 'Count']
@@ -955,6 +993,7 @@ def show_availability_section():
                         )
                         st.plotly_chart(fig, use_container_width=True)
 
+                    #  parking_zones info display
                     if 'Parkingzone' in zones_df.columns:
                         available_zones = zones_df['Parkingzone'].unique().tolist()
                         st.subheader("Available Parking Zones")
@@ -969,6 +1008,14 @@ def show_availability_section():
                             st.info("No active parking zones found")
                 else:
                     st.dataframe(status_df, use_container_width=True)
+
+                #  zone_location_map for map visulization
+                if zone_location_map:
+                    st.subheader("Parking Zones Map")
+                    try:
+                        generate_map(status_df, zone_location_map)
+                    except Exception as e:
+                        st.warning(f"Map rendering failed: {e}")
             else:
                 st.warning(f"Unable to obtain parking space status data for {confirmed_street}")
         else:
