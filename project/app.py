@@ -212,7 +212,7 @@ def get_population_data(api_url="https://ldr1cwcs34.execute-api.ap-southeast-2.a
 def sync_page_from_query():
     """Sync page from URL query parameters to session state"""
     try:
-        q = st.experimental_get_query_params().get("page", [None])[0]
+        q = st.query_params.get("page", [None])[0]
         if q and q in ["home", "availability", "population", "environment"]:
             st.session_state.page = q
     except Exception:
