@@ -532,8 +532,10 @@ def show_navigation():
 def show_homepage():
     st.markdown("""
     <div class="main-header">
-        <h1 class="main-title">Melbourne CBD Transport & Parking Dashboard</h1>
-        <p class="main-subtitle">Information on Available Parking in Melbourne CBD, Along with Commuting Details</p>
+        <h1 class="main-title">Your Journey Through Melbourne CBD Parking and Transport</h1>
+        <p class="main-subtitle" style="font-size: 1.3rem; margin-bottom: 2rem; opacity: 0.9;">
+            "Every trip into Melbourne has its twists," I say with a knowing smile. "From finding that elusive parking spot to choosing the greener way to travel, there’s always a story unfolding. This dashboard is your travel companion, showing you what is happening on the streets, in the air, and behind the wheel right now."
+        </p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -542,8 +544,8 @@ def show_homepage():
     <div class="click-card" style="background: linear-gradient(135deg,#ff9a56 0%,#ff6b35 100%); color:white; text-align:center; border:none; margin: 2rem 0;">
         <div class="icon">🅿️</div>
         <h4 style="font-size: 1.8rem;">Real-Time Parking Availability</h4>
-        <p style="font-size: 1.3rem; margin-bottom: 2rem; opacity: 0.9;">
-            Find available parking spaces across Melbourne CBD locations in real-time
+        <p style="font-size: 1rem; margin-bottom: 2rem; opacity: 0.9;">
+            "Have you ever circled the block and thought, ‘Please let there be a space around the next corner’?" Well, now you don’t have to rely on luck. With real time updates across Melbourne CBD, you can skip the guesswork and head straight to where spots are free before someone else gets them.
         </p>
         <div style="
             background: rgba(255, 255, 255, 0.2);
@@ -576,11 +578,11 @@ def show_homepage():
 
     with col1:
         st.markdown("""
-        <div class="click-card" style="background:linear-gradient(135deg,#fef3e2 0%, #fed7aa 100%); color:#3a2a11; height: 280px; display: flex; flex-direction: column; justify-content: space-between;">
+        <div class="click-card" style="background:linear-gradient(135deg,#fef3e2 0%, #fed7aa 100%); color:#3a2a11; height: 300px; display: flex; flex-direction: column; justify-content: space-between; margin-bottom: 2rem;">
             <div>
                 <div class="icon">👥</div>
                 <h4>Population & Vehicle Growth</h4>
-                <p>Analyze population and vehicle registration trends affecting parking demand</p>
+                <p style="font-size: 1rem; margin-bottom: 2rem;">"Melbourne is growing fast, and so are the cars," the data tells us. Here’s how our population surge is reshaping traffic, parking, and your daily commute.</p>
             </div>
             <a class="stretched" href="?page=population" aria-label="Open population"></a>
         </div>
@@ -588,11 +590,11 @@ def show_homepage():
 
         with col2:
             st.markdown("""
-            <div class="click-card" style="background:linear-gradient(135deg,#f0fdf4 0%, #dcfce7 100%); color:#0e5132; height: 280px; display: flex; flex-direction: column; justify-content: space-between;">
+            <div class="click-card" style="background:linear-gradient(135deg,#f0fdf4 0%, #dcfce7 100%); color:#0e5132; height: 300px; display: flex; flex-direction: column; justify-content: space-between; margin-bottom: 2rem;">
                 <div>
                     <div class="icon">🌱</div>
                     <h4>Environmental Impact</h4>
-                    <p>Compare CO₂ emissions across transport methods and parking choices</p>
+                    <p style="font-size: 1rem; margin-bottom: 2rem;">"Every choice we make leaves a mark," says the city planner. Discover how each transport option affects the environment and how even small changes can make a big difference.</p>
                 </div>
                 <a class="stretched" href="?page=environment" aria-label="Open environment"></a>
             </div>
@@ -618,7 +620,7 @@ def show_population_vehicle_section():
 
     st.markdown("""
     <div class="metric-container">
-        <p style="color: #6b7280; font-size: 1.1rem; margin-bottom: 1rem;">
+        <p style="color: #6b7280; font-size: 1.1rem; margin-bottom: 0.6rem;">
             "Behind every car on the road is a story, someone late for a meeting, a parent on the school run, 
             a dreamer chasing a deadline," I explain. Over the years, Melbourne’s streets have seen more people, 
             more vehicles, and more pressure on space. Here is how our city has changed and what it might mean for tomorrow.
@@ -775,7 +777,7 @@ def show_environment_section():
 
     st.markdown("""
     <div class="metric-container">
-        <p style="color: #6b7280; font-size: 1.1rem; margin-bottom: 2rem;">
+        <p style="color: #6b7280; font-size: 1.1rem; margin-bottom: 0.6rem;">
             "Every journey leaves a mark, but some marks fade faster than others," I remind you. 
             From solo car rides to shared trips, trains, bikes, and walking, each choice tells a different environmental story. 
             Let us see which ones are the quiet heroes of Melbourne’s air quality.
@@ -874,7 +876,10 @@ def show_availability_section():
 
     st.markdown("""
     <div class="metric-container">
-        <p style="color: #6b7280; font-size: 1.1rem; margin-bottom: 2rem;">
+        <p style="color: #6b7280; font-size: 1.1rem; margin-bottom: 0.5rem;">
+            "It’s a busy day in Melbourne," I say, scanning the streets. "But where exactly can you park right now?" Select your location and time to see if fortune is on your side or if it is time to consider another place.
+        </p>
+        <p style="color: #6b7280; font-size: 1.1rem; margin-bottom: 0.6rem;">
             Select a street to view detailed parking zone information and current space availability.
         </p>
     </div>
@@ -1078,20 +1083,25 @@ def show_availability_section():
         st.error(f"Error occurred while obtaining parking information.: {str(e)}")
         st.write("Check the data connection and function implementation")
 
-    st.markdown("""
-    <div class="insight-box">
-        <strong>Parking Insight:</strong> Parking availability data helps optimize parking space utilization 
-        and reduces traffic congestion caused by drivers searching for parking spots.
-    </div>
-    """, unsafe_allow_html=True)
-
 
 
 # Main application logic
 def main():
-    # Initialize session state
+    # Initialize session state and check URL parameters
     if 'page' not in st.session_state:
         st.session_state.page = 'home'
+    
+    # Check URL parameters for navigation (for a-link navigation)
+    try:
+        query_params = st.experimental_get_query_params()
+        if 'page' in query_params:
+            page_param = query_params['page'][0]
+            if page_param in ['home', 'availability', 'population', 'environment']:
+                st.session_state.page = page_param
+                # Clear URL parameters after setting session state
+                st.experimental_set_query_params()
+    except:
+        pass  # Fallback if query params not available
     
     # Navigation buttons in sidebar
     with st.sidebar:
