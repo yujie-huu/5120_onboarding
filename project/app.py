@@ -8,6 +8,27 @@ import plotly.graph_objects as go
 import pydeck as pdk
 import requests
 import streamlit as st
+import hmac
+
+# --- Password gate (define first, call early) ---
+def check_password() -> bool:
+    real = str(st.secrets.get("APP_PASSWORD", ""))  # 从 Cloud Secrets 里读 APP_PASSWORD
+    if st.session_state.get("authed", False):
+        # 可选：侧边栏提供登出
+        with st.sidebar:
+            if st.button("Logout"):
+                st.session_state["authed"] = False
+                st.rerun()
+        return True
+
+    st.title("🔒 Protected App")
+    pwd = st.text_input("Enter password", type="password")
+    if st.button("Login") and real and hmac.compare_digest(pwd, real):
+        st.session_state["authed"] = True
+        st.rerun()
+
+    st.stop()  # 未通过验证，停止后续页面渲染
+
 
 # Page configuration
 st.set_page_config(
@@ -16,6 +37,9 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="collapsed"
 )
+
+# --- Call the gate BEFORE any UI / API / CSS ---
+check_password()
 
 # Custom CSS for styling
 st.markdown("""
