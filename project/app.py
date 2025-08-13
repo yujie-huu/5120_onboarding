@@ -10,26 +10,6 @@ import requests
 import streamlit as st
 import hmac
 
-# --- Password gate (define first, call early) ---
-def check_password() -> bool:
-    real = str(st.secrets.get("APP_PASSWORD", ""))  # 从 Cloud Secrets 里读 APP_PASSWORD
-    if st.session_state.get("authed", False):
-        # 可选：侧边栏提供登出
-        with st.sidebar:
-            if st.button("Logout"):
-                st.session_state["authed"] = False
-                st.rerun()
-        return True
-
-    st.title("🔒 Protected App")
-    pwd = st.text_input("Enter password", type="password")
-    if st.button("Login") and real and hmac.compare_digest(pwd, real):
-        st.session_state["authed"] = True
-        st.rerun()
-
-    st.stop()  # 未通过验证，停止后续页面渲染
-
-
 # Page configuration
 st.set_page_config(
     page_title="Melbourne CBD Parking & Transport Dashboard",
@@ -37,9 +17,6 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="collapsed"
 )
-
-# --- Call the gate BEFORE any UI / API / CSS ---
-check_password()
 
 # Custom CSS for styling
 st.markdown("""
@@ -1108,9 +1085,42 @@ def show_availability_section():
         st.write("Check the data connection and function implementation")
 
 
+def require_password():
+    """Simple password gate. Call this at the very top of your app."""
+    if "authenticated" in st.session_state and st.session_state.authenticated:
+        return
+
+    st.title("🔒 Melbourne Parking App")
+    if "auth_fail" not in st.session_state:
+        st.session_state.auth_fail = False
+
+    pw = st.text_input("Enter password", type="password", placeholder="••••••••")
+    if st.button("Unlock") or pw:
+        if hmac.compare_digest(pw, st.secrets["auth"]["password"]):
+            st.session_state.authenticated = True
+            st.session_state.auth_fail = False
+            st.session_state.page = 'home'
+            st.rerun()
+        else:
+            st.session_state.auth_fail = True
+
+    if st.session_state.auth_fail:
+        st.error("Password is incorrect")
+
+    if "hint" in st.secrets.get("auth", {}):
+        with st.expander("Need a hint?"):
+            st.caption(st.secrets["auth"]["hint"])
+
+    # Only stop if not authenticated
+    if not st.session_state.get("authenticated", False):
+        st.stop()
+
 
 # Main application logic
 def main():
+
+    require_password()
+
     # Initialize session state and check URL parameters
     if 'page' not in st.session_state:
         st.session_state.page = 'home'
