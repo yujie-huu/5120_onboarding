@@ -1119,11 +1119,10 @@ def require_password():
 # Main application logic
 def main():
 
-    require_password()
-
     # Initialize session state and check URL parameters
     if 'page' not in st.session_state:
         st.session_state.page = 'home'
+        st.session_state.authenticated = False
     
     # Check URL parameters for navigation (for a-link navigation)
     try:
@@ -1164,13 +1163,19 @@ def main():
     
     # Show appropriate page
     if st.session_state.page == 'home':
-        show_homepage()
+        if st.session_state.get("authenticated", False):
+            show_homepage()
+        else:
+            require_password()
     elif st.session_state.page == 'population':
         show_population_vehicle_section()
+        st.session_state.authenticated = True
     elif st.session_state.page == 'environment':
         show_environment_section()
+        st.session_state.authenticated = True
     elif st.session_state.page == 'availability':
         show_availability_section()
+        st.session_state.authenticated = True
 
 
 if __name__ == "__main__":
