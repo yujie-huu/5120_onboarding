@@ -3,9 +3,9 @@ import streamlit as st, pandas as pd, pydeck as pdk
 
 def generate_map(status_df: pd.DataFrame, zone_location_map: dict | None = None):
     """
-    渲染停车区位图：
+    Render the parking area map：
       zone_location_map: { zone_number: (lat, lon, status) }
-      status_df: 可选，用于补充 kerbside_id 等信息（需包含 'zone_number' 列）
+      status_df: used to supplement information such as kerbside_id (must include the 'zone_number' column)
     """
     if not zone_location_map:
         st.info("No zone locations to display on the map.")
@@ -24,24 +24,25 @@ def generate_map(status_df: pd.DataFrame, zone_location_map: dict | None = None)
         st.info("No valid coordinates to display on the map.")
         return
 
-    # 2) 可选：合并额外信息（如 kerbside_id）
+    # 2) Merge additional information (such as) kerbside_id）
     if status_df is not None and not status_df.empty and "zone_number" in status_df.columns:
-        # 只挑选常用字段（存在才会并入）
+        # Select fields (only include those that exist)
         extra_cols = [c for c in ["kerbside_id", "status"] if c in status_df.columns]
         if extra_cols:
             df = df.merge(status_df[["zone_number", *extra_cols]].drop_duplicates("zone_number"),
                           on="zone_number", how="left", suffixes=("", "_df"))
 
-            # 若合并后有两个 status，优先以字典中的为准，缺失时用 df 的
+            # If there are two statuses after the merge, the one from the dictionary shall take precedence.
+            # If it is missing, the one from df shall be used.
             if "status_df" in df.columns:
                 df["status"] = df["status"].fillna(df["status_df"])
                 df = df.drop(columns=[c for c in ["status_df"] if c in df.columns])
 
-    # 3) 颜色映射：Unoccupied(绿)、Present(红)、其他(灰)
+    # 3) Color mapping: Unoccupied (green), Present (red), Others (gray)
     color_map = {"Unoccupied": [34, 197, 94], "Present": [239, 68, 68]}
     df["color"] = df["status"].map(lambda s: color_map.get(s, [107, 114, 128]))
 
-    # 4) 视角
+    # 4) view
     view_state = pdk.ViewState(
         latitude=float(df["lat"].mean()),
         longitude=float(df["lon"].mean()),
@@ -49,7 +50,7 @@ def generate_map(status_df: pd.DataFrame, zone_location_map: dict | None = None)
         pitch=0
     )
 
-    # 5) 点图层
+    # 5) dots layer
     points = pdk.Layer(
         "ScatterplotLayer",
         data=df,
@@ -61,8 +62,8 @@ def generate_map(status_df: pd.DataFrame, zone_location_map: dict | None = None)
         pickable=True
     )
 
-    # 6) Tooltip：显示 Zone、Status、KerbsideID（如果有）
-    #   注意：pydeck tooltip 必须字段在 data 里存在
+    # 6) Tooltip：show Zone、Status、KerbsideID
+    #  Note：The tooltip mandatory field must exist in the data.
     tooltip_fields = ["Zone {zone_number}", "Status: {status}"]
     if "kerbside_id" in df.columns:
         tooltip_fields.append("KerbsideID: {kerbside_id}")
@@ -72,7 +73,7 @@ def generate_map(status_df: pd.DataFrame, zone_location_map: dict | None = None)
     deck = pdk.Deck(layers=[points], initial_view_state=view_state, tooltip=tooltip, map_style=None)
     st.pydeck_chart(deck, use_container_width=True)
 
-    # 7) 图例
+    # 7) Legend
     st.markdown("""
     <div style="margin-top:8px;">
       <b>Legend:</b>
